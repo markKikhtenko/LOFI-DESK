@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="62" y1="44" x2="452" y2="472" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#A997F0"/><stop offset=".52" stop-color="#6E82DC"/><stop offset="1" stop-color="#D29A67"/>
+    </linearGradient>
+    <radialGradient id="disc"><stop stop-color="#C3B8F1"/><stop offset=".22" stop-color="#6B6688"/><stop offset=".24" stop-color="#20212B"/><stop offset="1" stop-color="#111219"/></radialGradient>
+  </defs>
+  <rect width="512" height="512" rx="118" fill="#0E0F14"/>
+  <rect x="28" y="28" width="456" height="456" rx="98" fill="url(#bg)" opacity=".16"/>
+  <circle cx="256" cy="256" r="166" fill="url(#disc)" stroke="url(#bg)" stroke-width="13"/>
+  <circle cx="256" cy="256" r="126" fill="none" stroke="#FFF" stroke-opacity=".08" stroke-width="3"/>
+  <circle cx="256" cy="256" r="92" fill="none" stroke="#FFF" stroke-opacity=".07" stroke-width="3"/>
+  <circle cx="256" cy="256" r="38" fill="url(#bg)"/>
+  <circle cx="256" cy="256" r="11" fill="#101117"/>
+  <path d="M350 108v197c0 39-26 69-62 69-28 0-49-17-49-40 0-25 24-44 55-44 10 0 19 2 26 6V134l30-26Z" fill="#DAD4EF"/>
+</svg>
+
