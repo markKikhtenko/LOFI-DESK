@@ -6,7 +6,7 @@ import type { UpdateState } from '../types';
 
 const initialState: UpdateState = {
   status: 'idle',
-  currentVersion: '0.2.0',
+  currentVersion: '0.2.1',
   progress: 0,
 };
 
