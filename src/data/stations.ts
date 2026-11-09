@@ -1,43 +1,76 @@
 import type { Station } from '../types';
 
+function somaStation(
+  id: string,
+  channel: string,
+  name: string,
+  description: string,
+  accent: string,
+): Station {
+  const streamPath = `${channel}-128-mp3`;
+  return {
+    id,
+    name,
+    description,
+    streamUrl: `https://ice5.somafm.com/${streamPath}`,
+    streamFallbackUrls: [
+      `https://ice2.somafm.com/${streamPath}`,
+      `https://ice6.somafm.com/${streamPath}`,
+    ],
+    metadataUrl: `https://somafm.com/songs/${channel}.json`,
+    accent,
+    isBuiltIn: true,
+  };
+}
+
 export const DEFAULT_STATIONS: Station[] = [
-  {
-    id: 'somafm-groove-salad',
-    name: 'Groove Salad',
-    description: 'Мягкий ambient и downtempo для спокойной работы.',
-    streamUrl: 'https://ice5.somafm.com/groovesalad-128-mp3',
-    streamFallbackUrls: [
-      'https://ice2.somafm.com/groovesalad-128-mp3',
-      'https://ice6.somafm.com/groovesalad-128-mp3',
-    ],
-    metadataUrl: 'https://somafm.com/songs/groovesalad.json',
-    accent: '#8298ff',
-    isBuiltIn: true,
-  },
-  {
-    id: 'somafm-groove-salad-classic',
-    name: 'Groove Salad Classic',
-    description: 'Классический микс Groove Salad начала 2000-х.',
-    streamUrl: 'https://ice5.somafm.com/gsclassic-128-mp3',
-    streamFallbackUrls: [
-      'https://ice2.somafm.com/gsclassic-128-mp3',
-      'https://ice6.somafm.com/gsclassic-128-mp3',
-    ],
-    metadataUrl: 'https://somafm.com/songs/gsclassic.json',
-    accent: '#d39b6a',
-    isBuiltIn: true,
-  },
-  {
-    id: 'somafm-groove-salad-2',
-    name: 'Groove Salad 2',
-    description: 'Другой микс chilled ambient и неторопливых битов.',
-    streamUrl: 'https://ice5.somafm.com/groovesalad2-128-mp3',
-    streamFallbackUrls: [
-      'https://ice2.somafm.com/groovesalad2-128-mp3',
-      'https://ice6.somafm.com/groovesalad2-128-mp3',
-    ],
-    metadataUrl: 'https://somafm.com/songs/groovesalad2.json',
-    accent: '#9a7be8',
-    isBuiltIn: true,
-  },
+  somaStation(
+    'somafm-groove-salad',
+    'groovesalad',
+    'Groove Salad',
+    'Мягкий ambient и downtempo для спокойной работы.',
+    '#8298ff',
+  ),
+  somaStation(
+    'somafm-beat-blender',
+    'beatblender',
+    'Beat Blender',
+    'Дип-хаус, downtempo и мягкие ночные биты.',
+    '#7fc7b0',
+  ),
+  somaStation(
+    'somafm-vaporwaves',
+    'vaporwaves',
+    'Vaporwaves',
+    'Vaporwave, future funk и тёплая кассетная lo-fi эстетика.',
+    '#e58db6',
+  ),
+  somaStation(
+    'somafm-groove-salad-2',
+    'groovesalad2',
+    'Groove Salad 2',
+    'Другой микс chilled ambient и неторопливых битов.',
+    '#9a7be8',
+  ),
+  somaStation(
+    'somafm-lush',
+    'lush',
+    'Lush',
+    'Мелодичная электроника с мягким женским вокалом.',
+    '#ce8d80',
+  ),
+  somaStation(
+    'somafm-drone-zone',
+    'dronezone',
+    'Drone Zone',
+    'Протяжный ambient без ритма для глубокого фокуса.',
+    '#75a7bd',
+  ),
+  somaStation(
+    'somafm-groove-salad-classic',
+    'gsclassic',
+    'Groove Salad Classic',
+    'Классический микс Groove Salad начала 2000-х.',
+    '#d39b6a',
+  ),
 ];

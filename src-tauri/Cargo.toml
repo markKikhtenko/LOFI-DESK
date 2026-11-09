@@ -1,6 +1,6 @@
 [package]
 name = "lofi-desk"
-version = "0.1.1"
+version = "0.2.0"
 description = "Спокойный настольный музыкальный плеер"
 authors = ["Mark Kikhtenko"]
 edition = "2021"

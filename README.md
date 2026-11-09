@@ -10,7 +10,7 @@ LOFI DESK — открытый настольный музыкальный пл�
 
 ## Возможности
 
-- официальные прямые MP3-потоки SomaFM Groove Salad, Groove Salad Classic и Groove Salad 2;
+- семь официальных прямых MP3-потоков SomaFM: Groove Salad, Beat Blender, Vaporwaves, Lush, Drone Zone и другие chill-станции;
 - собственные станции по URL, избранное, индикация соединения и повторное подключение;
 - метаданные текущего эфира SomaFM;
 - рекурсивное сканирование MP3, FLAC, WAV и OGG, теги и встроенные обложки;
@@ -108,7 +108,7 @@ npm run tauri build -- --bundles nsis
 
 Версии синхронизированы между `package.json`, `src-tauri/Cargo.toml` и `src-tauri/tauri.conf.json`; история находится в [CHANGELOG.md](CHANGELOG.md).
 
-Известные ограничения версии 0.1.1:
+Известные ограничения версии 0.2.0:
 
 - метаданные пользовательских радиоэфиров не читаются без отдельного metadata endpoint;
 - набор доступных аудиокодеков зависит от WebView2/Windows;

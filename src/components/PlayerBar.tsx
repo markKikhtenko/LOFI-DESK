@@ -34,7 +34,7 @@ export function PlayerBar() {
     <footer className={`player-bar ${state.current ? 'has-media' : ''}`}>
       <div className="now-playing">
         <div className="now-art" style={station ? { background: `linear-gradient(145deg, ${station.accent}, #28233a)` } : undefined}>
-          {track?.cover ? <img src={track.cover} alt="" /> : isRadio ? <RotateCcw size={23} className={state.isPlaying ? 'spin-slow' : ''} /> : <ListMusic size={21} />}
+          {track?.cover ? <img src={track.cover} alt="" /> : isRadio ? <RotateCcw size={23} className={state.isPlaying && !state.isBuffering ? 'spin-slow' : ''} /> : <ListMusic size={21} />}
         </div>
         <div className="now-copy"><strong>{title}</strong><span title={subtitle}>{subtitle}</span></div>
         <button
@@ -93,4 +93,3 @@ export function PlayerBar() {
     </footer>
   );
 }
-

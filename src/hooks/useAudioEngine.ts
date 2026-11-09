@@ -5,6 +5,45 @@ import { useAppStore } from '../stores/useAppStore';
 
 const audio = new Audio();
 audio.preload = 'metadata';
+let audioContext: AudioContext | null = null;
+let analyser: AnalyserNode | null = null;
+let capturedSource: MediaStreamAudioSourceNode | null = null;
+
+function connectAudioAnalysis() {
+  if (!audioContext || !analyser || capturedSource) return;
+  const captureStream = (audio as HTMLAudioElement & { captureStream?: () => MediaStream }).captureStream;
+  if (!captureStream) return;
+  const stream = captureStream.call(audio);
+  if (!stream.getAudioTracks().length) return;
+  capturedSource = audioContext.createMediaStreamSource(stream);
+  capturedSource.connect(analyser);
+}
+
+function unlockAudioAnalysis() {
+  try {
+    if (!audioContext) {
+      audioContext = new AudioContext();
+      analyser = audioContext.createAnalyser();
+      analyser.fftSize = 128;
+      analyser.minDecibels = -88;
+      analyser.maxDecibels = -18;
+      analyser.smoothingTimeConstant = 0.82;
+    }
+    if (audioContext.state === 'suspended') void audioContext.resume().catch(() => undefined);
+    if (!audio.paused) connectAudioAnalysis();
+  } catch {
+    // Playback still works without Web Audio on runtimes that do not expose it.
+  }
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('pointerdown', unlockAudioAnalysis, { passive: true });
+  window.addEventListener('keydown', unlockAudioAnalysis);
+}
+
+export function getAudioAnalyser() {
+  return analyser;
+}
 
 function describePlaybackError(error: unknown) {
   if (error instanceof DOMException && error.name === 'NotAllowedError') {
@@ -58,6 +97,8 @@ export function useAudioEngine() {
       return;
     }
 
+    if (station?.isBuiltIn) audio.crossOrigin = 'anonymous';
+    else audio.removeAttribute('crossorigin');
     const source = station ? station.streamUrl : convertFileSrc(track!.path);
     stationSourcesRef.current = station
       ? [...new Set([station.streamUrl, ...(station.streamFallbackUrls ?? [])])]
@@ -97,6 +138,7 @@ export function useAudioEngine() {
 
   useEffect(() => {
     const onPlaying = () => {
+      connectAudioAnalysis();
       window.clearTimeout(retryTimerRef.current);
       retryTimerRef.current = undefined;
       retryRef.current = 0;
