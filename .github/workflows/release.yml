@@ -84,6 +84,26 @@ jobs:
           npm run build
           cargo test --manifest-path src-tauri/Cargo.toml
 
+      - name: Prime NSIS toolchain with retry
+        shell: pwsh
+        run: |
+          $maxAttempts = 3
+          for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
+            Write-Host "NSIS preparation attempt $attempt of $maxAttempts"
+            npm run tauri build -- --bundles nsis
+            $exitCode = $LASTEXITCODE
+            if ($exitCode -eq 0) {
+              Write-Host 'NSIS toolchain is ready.'
+              break
+            }
+            if ($attempt -eq $maxAttempts) {
+              throw "NSIS preparation failed after $maxAttempts attempts (exit code $exitCode)."
+            }
+            $delaySeconds = 10 * $attempt
+            Write-Warning "Transient NSIS download/build failure (exit code $exitCode). Retrying in $delaySeconds seconds."
+            Start-Sleep -Seconds $delaySeconds
+          }
+
       - name: Build signed NSIS installer and publish release
         uses: tauri-apps/tauri-action@v1
         env:
