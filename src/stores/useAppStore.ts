@@ -185,7 +185,10 @@ export const useAppStore = create<AppState>()(
       }),
       merge: (persisted, current) => {
         const saved = persisted as Partial<AppState>;
-        const savedCustom = saved.stations?.filter((station) => !station.isBuiltIn) ?? [];
+        const savedCustom = saved.stations?.filter((station) => !station.isBuiltIn).map((station) => ({
+          ...station,
+          category: station.category ?? 'custom',
+        })) ?? [];
         return {
           ...current,
           ...saved,

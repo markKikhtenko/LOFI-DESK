@@ -2,6 +2,8 @@ export type PageId = 'home' | 'radio' | 'library' | 'playlists' | 'favorites' | 
 
 export type RepeatMode = 'off' | 'all' | 'one';
 
+export type StationCategory = 'downtempo' | 'ambient' | 'chillout' | 'custom';
+
 export interface Station {
   id: string;
   name: string;
@@ -9,6 +11,7 @@ export interface Station {
   streamUrl: string;
   streamFallbackUrls?: string[];
   metadataUrl?: string;
+  category: StationCategory;
   accent: string;
   isBuiltIn: boolean;
 }

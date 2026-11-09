@@ -11,7 +11,18 @@ describe('built-in radio catalog', () => {
       'Lush',
       'Drone Zone',
       'Groove Salad Classic',
+      'Secret Agent',
+      'Deep Space One',
+      'Space Station Soma',
+      'Synphaera Radio',
+      'Illinois Street Lounge',
     ]);
+  });
+
+  it('groups stations into useful listening categories', () => {
+    expect(DEFAULT_STATIONS.filter((station) => station.category === 'downtempo')).toHaveLength(5);
+    expect(DEFAULT_STATIONS.filter((station) => station.category === 'ambient')).toHaveLength(4);
+    expect(DEFAULT_STATIONS.filter((station) => station.category === 'chillout')).toHaveLength(3);
   });
 
   it('provides distinct HTTPS fallback servers for every built-in station', () => {

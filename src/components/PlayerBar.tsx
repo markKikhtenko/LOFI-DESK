@@ -83,12 +83,12 @@ export function PlayerBar() {
           type="range"
           min="0"
           max="1"
-          step="0.01"
+          step="0.005"
           value={state.muted ? 0 : state.volume}
           onChange={(event) => state.setVolume(Number(event.target.value))}
           style={{ '--range-progress': `${(state.muted ? 0 : state.volume) * 100}%` } as React.CSSProperties}
         />
-        <span className="volume-value">{Math.round((state.muted ? 0 : state.volume) * 100)}</span>
+        <span className="volume-value">{Math.round((state.muted ? 0 : state.volume) * 100)}%</span>
       </div>
     </footer>
   );
