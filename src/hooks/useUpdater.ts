@@ -6,7 +6,7 @@ import type { UpdateState } from '../types';
 
 const initialState: UpdateState = {
   status: 'idle',
-  currentVersion: '0.1.0',
+  currentVersion: '0.1.1',
   progress: 0,
 };
 
@@ -87,4 +87,3 @@ export function useUpdater(autoCheck = false) {
 
   return { state, checkForUpdates, installUpdate };
 }
-

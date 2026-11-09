@@ -6,6 +6,13 @@ import { useAppStore } from '../stores/useAppStore';
 const audio = new Audio();
 audio.preload = 'metadata';
 
+function describePlaybackError(error: unknown) {
+  if (error instanceof DOMException && error.name === 'NotAllowedError') {
+    return 'Windows заблокировал запуск аудио. Нажмите воспроизведение ещё раз.';
+  }
+  return error instanceof Error ? error.message : 'Не удалось начать воспроизведение.';
+}
+
 export function seekTo(seconds: number) {
   if (Number.isFinite(audio.duration)) audio.currentTime = Math.max(0, Math.min(seconds, audio.duration));
 }
@@ -20,6 +27,8 @@ export function useAudioEngine() {
   const folders = useAppStore((state) => state.folders);
   const retryRef = useRef(0);
   const retryTimerRef = useRef<number | undefined>(undefined);
+  const stationSourcesRef = useRef<string[]>([]);
+  const stationSourceIndexRef = useRef(0);
 
   useEffect(() => {
     void restoreMediaScopes(folders).catch(() => undefined);
@@ -33,7 +42,9 @@ export function useAudioEngine() {
   useEffect(() => {
     const store = useAppStore.getState();
     window.clearTimeout(retryTimerRef.current);
+    retryTimerRef.current = undefined;
     retryRef.current = 0;
+    stationSourceIndexRef.current = 0;
     audio.pause();
     audio.removeAttribute('src');
     audio.load();
@@ -48,6 +59,9 @@ export function useAudioEngine() {
     }
 
     const source = station ? station.streamUrl : convertFileSrc(track!.path);
+    stationSourcesRef.current = station
+      ? [...new Set([station.streamUrl, ...(station.streamFallbackUrls ?? [])])]
+      : [];
     audio.src = source;
     audio.load();
 
@@ -60,12 +74,6 @@ export function useAudioEngine() {
       });
     }
 
-    if (isPlaying) {
-      void audio.play().catch((error: unknown) => {
-        store.setPlaybackError(error instanceof Error ? error.message : 'Не удалось начать воспроизведение.');
-        store.setPlaying(false);
-      });
-    }
   // The source must only be replaced when the selected item changes.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [current?.kind, current?.id]);
@@ -74,8 +82,13 @@ export function useAudioEngine() {
     if (!current) return;
     if (isPlaying) {
       void audio.play().catch((error: unknown) => {
-        useAppStore.getState().setPlaybackError(error instanceof Error ? error.message : 'Не удалось начать воспроизведение.');
-        useAppStore.getState().setPlaying(false);
+        const state = useAppStore.getState();
+        if (state.current?.kind === 'station' && !(error instanceof DOMException && error.name === 'NotAllowedError')) {
+          // A media error event owns retries and source failover for live streams.
+          return;
+        }
+        state.setPlaybackError(describePlaybackError(error));
+        state.setPlaying(false);
       });
     } else {
       audio.pause();
@@ -84,6 +97,8 @@ export function useAudioEngine() {
 
   useEffect(() => {
     const onPlaying = () => {
+      window.clearTimeout(retryTimerRef.current);
+      retryTimerRef.current = undefined;
       retryRef.current = 0;
       useAppStore.getState().setBuffering(false);
       useAppStore.getState().setPlaybackError(null);
@@ -105,13 +120,23 @@ export function useAudioEngine() {
     };
     const onError = () => {
       const state = useAppStore.getState();
+      if (retryTimerRef.current !== undefined) return;
       if (state.current?.kind === 'station' && state.isPlaying && retryRef.current < 4) {
         retryRef.current += 1;
+        const sources = stationSourcesRef.current;
+        if (sources.length > 1) {
+          stationSourceIndexRef.current = (stationSourceIndexRef.current + 1) % sources.length;
+        }
+        state.setPlaybackError(sources.length > 1
+          ? `Поток прерван. Подключаем резервный сервер ${retryRef.current}/4…`
+          : `Поток прерван. Повторное подключение ${retryRef.current}/4…`);
         state.setBuffering(true);
-        state.setPlaybackError(`Поток прерван. Повторное подключение ${retryRef.current}/4…`);
         retryTimerRef.current = window.setTimeout(() => {
+          retryTimerRef.current = undefined;
+          const nextSource = sources[stationSourceIndexRef.current];
+          if (nextSource) audio.src = nextSource;
           audio.load();
-          void audio.play();
+          void audio.play().catch(() => undefined);
         }, Math.min(12_000, retryRef.current * 2_000));
       } else {
         state.setPlaybackError('Источник недоступен или формат не поддерживается.');
@@ -140,6 +165,7 @@ export function useAudioEngine() {
 
     return () => {
       window.clearTimeout(retryTimerRef.current);
+      retryTimerRef.current = undefined;
       audio.removeEventListener('playing', onPlaying);
       audio.removeEventListener('waiting', onWaiting);
       audio.removeEventListener('stalled', onWaiting);

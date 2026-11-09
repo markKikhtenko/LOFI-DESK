@@ -94,10 +94,9 @@ jobs:
           tagName: v__VERSION__
           releaseName: 'LOFI DESK v__VERSION__'
           releaseBody: |
-            Первый публичный выпуск LOFI DESK для Windows 10/11 x64.
+            Список изменений этого выпуска приведён в CHANGELOG.md.
 
             Установщик NSIS и updater-артефакты подписаны ключом Tauri. Подпись Authenticode пока не настроена, поэтому Windows SmartScreen может показать предупреждение.
           releaseDraft: false
           prerelease: false
           args: --bundles nsis
-

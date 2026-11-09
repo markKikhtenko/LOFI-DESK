@@ -7,6 +7,7 @@ export interface Station {
   name: string;
   description: string;
   streamUrl: string;
+  streamFallbackUrls?: string[];
   metadataUrl?: string;
   accent: string;
   isBuiltIn: boolean;
@@ -56,4 +57,3 @@ export interface ScannedLibrary {
   tracks: Track[];
   skipped: number;
 }
-

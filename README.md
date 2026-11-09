@@ -108,7 +108,7 @@ npm run tauri build -- --bundles nsis
 
 Версии синхронизированы между `package.json`, `src-tauri/Cargo.toml` и `src-tauri/tauri.conf.json`; история находится в [CHANGELOG.md](CHANGELOG.md).
 
-Известные ограничения версии 0.1.0:
+Известные ограничения версии 0.1.1:
 
 - метаданные пользовательских радиоэфиров не читаются без отдельного metadata endpoint;
 - набор доступных аудиокодеков зависит от WebView2/Windows;

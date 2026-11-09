@@ -196,7 +196,7 @@ async fn fetch_station_metadata(url: String) -> Result<Option<String>, String> {
     }
     let client = reqwest::Client::builder()
         .timeout(Duration::from_secs(8))
-        .user_agent("LOFI-DESK/0.1.0")
+        .user_agent(concat!("LOFI-DESK/", env!("CARGO_PKG_VERSION")))
         .build()
         .map_err(|error| error.to_string())?;
     let response = client
