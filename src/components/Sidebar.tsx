@@ -22,6 +22,8 @@ const navigation: Array<{ id: PageId; label: string; icon: typeof Home }> = [
 export function Sidebar() {
   const page = useAppStore((state) => state.page);
   const setPage = useAppStore((state) => state.setPage);
+  const glowEnabled = useAppStore((state) => state.glowEnabled);
+  const setGlowEnabled = useAppStore((state) => state.setGlowEnabled);
 
   return (
     <aside className="sidebar">
@@ -41,10 +43,16 @@ export function Sidebar() {
       </nav>
 
       <div className="sidebar-bottom">
-        <div className="focus-note">
+        <button
+          className="ambient-toggle"
+          type="button"
+          aria-pressed={glowEnabled}
+          onClick={() => setGlowEnabled(!glowEnabled)}
+        >
           <Sparkles size={17} />
-          <div><strong>Тихий режим</strong><span>Музыка остаётся в трее</span></div>
-        </div>
+          <span className="ambient-toggle-copy"><strong>Фоновый glow</strong><small>{glowEnabled ? 'Свечение включено' : 'Свечение выключено'}</small></span>
+          <span className="ambient-toggle-switch" aria-hidden="true"><i /></span>
+        </button>
         <button className={`nav-item ${page === 'settings' ? 'active' : ''}`} onClick={() => setPage('settings')}>
           <Settings size={18} strokeWidth={1.8} />
           <span>Настройки</span>
@@ -53,4 +61,3 @@ export function Sidebar() {
     </aside>
   );
 }
-

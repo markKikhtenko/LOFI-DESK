@@ -1,4 +1,4 @@
-import { CheckCircle2, Download, ExternalLink, FolderOpen, Info, RefreshCw, ShieldCheck } from 'lucide-react';
+import { CheckCircle2, Download, ExternalLink, FolderOpen, Info, RefreshCw } from 'lucide-react';
 import { PageHeader } from '../components/PageHeader';
 import { isTauri } from '../services/tauri';
 import type { UpdateState } from '../types';
@@ -12,11 +12,11 @@ export function SettingsPage({ update, onCheck, onInstall }: { update: UpdateSta
   const busy = update.status === 'checking' || update.status === 'downloading';
   return (
     <div className="page settings-page">
-      <PageHeader eyebrow="LOFI DESK" title="Настройки" description="Воспроизведение, медиатека и безопасные обновления приложения." />
+      <PageHeader eyebrow="LOFI DESK" title="Настройки" description="Параметры воспроизведения, медиатеки и обновлений." />
       <div className="settings-layout">
         <section className="settings-card">
-          <div className="settings-card-title"><span className="settings-icon purple"><Download size={19} /></span><div><h2>Обновления</h2><p>Подписанные выпуски из GitHub Releases</p></div></div>
-          <div className="version-row"><div><span>Текущая версия</span><strong>v{update.currentVersion}</strong></div><span className={`update-badge ${update.status}`}><ShieldCheck size={14} />{update.status === 'available' ? `Доступна v${update.availableVersion}` : 'Проверка подписи включена'}</span></div>
+          <div className="settings-card-title"><span className="settings-icon purple"><Download size={19} /></span><div><h2>Обновления</h2><p>GitHub Releases</p></div></div>
+          <div className="version-row"><div><span>Текущая версия</span><strong>v{update.currentVersion}</strong></div>{update.status === 'available' && <span className="update-badge available">Доступна v{update.availableVersion}</span>}</div>
           {update.notes && <div className="release-notes"><strong>Что нового</strong><p>{update.notes}</p></div>}
           {update.status === 'downloading' && <div className="download-progress"><div><span>Загрузка и проверка</span><strong>{update.progress}%</strong></div><progress max="100" value={update.progress} /></div>}
           {update.message && <div className={`status-note ${update.status === 'error' ? 'error' : ''}`}>{update.status === 'up-to-date' && <CheckCircle2 size={15} />}{update.message}</div>}
@@ -27,7 +27,7 @@ export function SettingsPage({ update, onCheck, onInstall }: { update: UpdateSta
         </section>
 
         <section className="settings-card">
-          <div className="settings-card-title"><span className="settings-icon blue"><FolderOpen size={19} /></span><div><h2>Медиатека</h2><p>Папки сканируются только локально</p></div></div>
+          <div className="settings-card-title"><span className="settings-icon blue"><FolderOpen size={19} /></span><div><h2>Медиатека</h2><p>Выбранные папки с музыкой</p></div></div>
           <div className="settings-list">
             {folders.length ? folders.map((folder) => <div key={folder}><FolderOpen size={16} /><span title={folder}>{fileName(folder)}<small>{folder}</small></span></div>) : <p className="muted-copy">Папки ещё не добавлены. Откройте раздел «Медиатека».</p>}
           </div>
@@ -40,7 +40,7 @@ export function SettingsPage({ update, onCheck, onInstall }: { update: UpdateSta
 
         <section className="settings-card about-card">
           <div><strong>LOFI DESK</strong><span>v{update.currentVersion}</span></div>
-          <p>Открытый настольный плеер на Tauri 2. Пользовательские данные находятся в профиле Windows и не удаляются при обновлении приложения.</p>
+          <p>Настольный аудиоплеер на Tauri 2.</p>
           <a href="https://github.com/markKikhtenko/LOFI-DESK" target="_blank" rel="noreferrer">Исходный код <ExternalLink size={14} /></a>
           {!isTauri() && <small>Сейчас открыт браузерный режим предпросмотра: системные функции отключены.</small>}
         </section>

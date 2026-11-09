@@ -12,6 +12,7 @@ import { useAppStore } from './stores/useAppStore';
 
 export default function App() {
   const page = useAppStore((state) => state.page);
+  const glowEnabled = useAppStore((state) => state.glowEnabled);
   useAudioEngine();
   const updater = useUpdater(true);
   const pages = {
@@ -24,11 +25,10 @@ export default function App() {
   };
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell ${glowEnabled ? 'glow-on' : ''}`}>
       <Sidebar />
       <main className="main-content">{pages[page]}</main>
       <PlayerBar />
     </div>
   );
 }
-

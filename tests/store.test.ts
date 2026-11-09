@@ -24,6 +24,7 @@ beforeEach(() => {
     queue: [],
     current: null,
     isPlaying: false,
+    glowEnabled: false,
   });
 });
 
@@ -50,5 +51,9 @@ describe('application store', () => {
     useAppStore.getState().skip(1);
     expect(useAppStore.getState().current).toEqual({ kind: 'station', id: DEFAULT_STATIONS[1]!.id });
   });
-});
 
+  it('toggles the ambient glow preference', () => {
+    useAppStore.getState().setGlowEnabled(true);
+    expect(useAppStore.getState().glowEnabled).toBe(true);
+  });
+});

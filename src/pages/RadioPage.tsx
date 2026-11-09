@@ -34,7 +34,7 @@ export function RadioPage() {
 
   return (
     <div className="page">
-      <PageHeader eyebrow="Прямой эфир" title="Интернет-радио" description="Открытые MP3-потоки SomaFM и ваши станции — без регистрации." actions={<button className="primary-button" onClick={() => setEditor('new')}><Plus size={17} />Добавить станцию</button>} />
+      <PageHeader eyebrow="Прямой эфир" title="Интернет-радио" description="MP3-потоки SomaFM и добавленные вами станции." actions={<button className="primary-button" onClick={() => setEditor('new')}><Plus size={17} />Добавить станцию</button>} />
       <div className="toolbar">
         <label className="search-field"><Search size={17} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Найти станцию" /></label>
         <span className="toolbar-meta">{filtered.length} в каталоге</span>

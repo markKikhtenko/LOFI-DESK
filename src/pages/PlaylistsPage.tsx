@@ -50,9 +50,8 @@ export function PlaylistsPage() {
             </button>
           ))}
         </div>
-      ) : <EmptyState icon={ListMusic} title="Создайте первый плейлист" description="Плейлисты хранятся только на этом компьютере и доступны без интернета." action={<button className="primary-button" onClick={() => setCreating(true)}><Plus size={17} />Создать плейлист</button>} />}
+      ) : <EmptyState icon={ListMusic} title="Создайте первый плейлист" description="Добавляйте композиции через меню в медиатеке." action={<button className="primary-button" onClick={() => setCreating(true)}><Plus size={17} />Создать плейлист</button>} />}
       {creating && <Modal title="Новый плейлист" onClose={() => setCreating(false)}><form className="form-stack" onSubmit={create}><label><span>Название</span><input name="name" autoFocus required maxLength={80} placeholder="Например, Глубокая работа" /></label><div className="form-actions"><button type="button" className="secondary-button" onClick={() => setCreating(false)}>Отмена</button><button className="primary-button">Создать</button></div></form></Modal>}
     </div>
   );
 }
-

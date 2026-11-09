@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "LOFI DESK",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "identifier": "com.markkikhtenko.lofidesk",
   "build": {
     "beforeDevCommand": "npm run dev",
@@ -37,8 +37,8 @@
     "targets": ["nsis"],
     "createUpdaterArtifacts": true,
     "category": "Music",
-    "shortDescription": "Локальная музыка и интернет-радио для спокойной работы",
-    "longDescription": "LOFI DESK объединяет локальную музыкальную медиатеку и открытые интернет-радиостанции в минималистичном настольном плеере.",
+    "shortDescription": "Настольный плеер для локальной музыки и интернет-радио",
+    "longDescription": "LOFI DESK — настольный плеер с локальной медиатекой, интернет-радио, плейлистами и избранным.",
     "copyright": "Copyright © 2026 Mark Kikhtenko",
     "publisher": "Mark Kikhtenko",
     "homepage": "https://github.com/markKikhtenko/LOFI-DESK",

@@ -10,7 +10,7 @@ export function FavoritesPage() {
   const tracks = useAppStore((state) => state.tracks.filter((track) => state.favoriteTrackIds.includes(track.id)));
   return (
     <div className="page">
-      <PageHeader eyebrow="Всегда под рукой" title="Избранное" description="Сохранённые радиостанции и композиции в одном месте." />
+      <PageHeader eyebrow="Сохранённое" title="Избранное" description="Радиостанции и композиции, отмеченные сердцем." />
       {!stations.length && !tracks.length ? <EmptyState icon={Heart} title="Здесь пока тихо" description="Нажимайте на сердце рядом со станцией или композицией — она появится в этом разделе." /> : (
         <>
           {stations.length > 0 && <section className="content-section first-section"><div className="section-heading"><h2>Радиостанции</h2></div><div className="station-grid">{stations.map((station) => <StationCard station={station} key={station.id} />)}</div></section>}
@@ -20,4 +20,3 @@ export function FavoritesPage() {
     </div>
   );
 }
-

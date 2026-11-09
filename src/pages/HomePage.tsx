@@ -1,4 +1,4 @@
-import { ArrowRight, Clock3, Headphones, Library, Pause, Play, Radio, Sparkles } from 'lucide-react';
+import { ArrowRight, Headphones, Library, Pause, Play, Radio } from 'lucide-react';
 import { AudioSpectrum } from '../components/AudioSpectrum';
 import { StationCard } from '../components/StationCard';
 import { TrackTable } from '../components/TrackTable';
@@ -25,9 +25,9 @@ export function HomePage() {
       <section className={`hero-panel ${isAudible ? 'is-playing' : ''}`}>
         <div className="hero-glow hero-glow-one" /><div className="hero-glow hero-glow-two" />
         <div className="hero-content">
-          <p className="eyebrow"><Sparkles size={14} /> Пространство для концентрации</p>
+          <p className="eyebrow">Главная</p>
           <h1>{greeting}.<br /><span>Настроимся на волну?</span></h1>
-          <p>Спокойное радио и ваша музыка — без аккаунтов, рекламы и лишнего шума.</p>
+          <p>Радио и музыка из вашей медиатеки.</p>
           <div className="hero-actions">
             {hasMedia ? (
               <button className="primary-button" onClick={() => state.setPlaying(!state.isPlaying)}>
@@ -54,10 +54,9 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="stats-row">
+      <section className="stats-row stats-row-compact">
         <div><span className="stat-icon purple"><Radio size={19} /></span><p><strong>{formatCount(stations.length, 'станция', 'станции', 'станций')}</strong><span>готовы к эфиру</span></p></div>
         <div><span className="stat-icon blue"><Headphones size={19} /></span><p><strong>{formatCount(tracks.length, 'трек', 'трека', 'треков')}</strong><span>в локальной медиатеке</span></p></div>
-        <div><span className="stat-icon amber"><Clock3 size={19} /></span><p><strong>Всегда рядом</strong><span>продолжает играть в трее</span></p></div>
       </section>
 
       <section className="content-section">

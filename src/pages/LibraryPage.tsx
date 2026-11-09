@@ -44,7 +44,7 @@ export function LibraryPage() {
 
   return (
     <div className="page">
-      <PageHeader eyebrow="Локально и без интернета" title="Медиатека" description="MP3, FLAC, WAV и OGG из выбранных папок на вашем компьютере." actions={
+      <PageHeader eyebrow="Аудиофайлы" title="Медиатека" description="MP3, FLAC, WAV и OGG из выбранных папок на вашем компьютере." actions={
         <><button className="secondary-button" disabled={busy || !folders.length} onClick={() => void rescan()}><RefreshCw size={17} className={busy ? 'spin' : ''} />Пересканировать</button><button className="primary-button" disabled={busy} onClick={() => void addFolder()}><FolderOpen size={17} />Добавить папку</button></>
       } />
 
@@ -62,4 +62,3 @@ export function LibraryPage() {
     </div>
   );
 }
-

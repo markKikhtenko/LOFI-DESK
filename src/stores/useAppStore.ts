@@ -23,6 +23,7 @@ interface AppState {
   repeat: RepeatMode;
   position: number;
   duration: number;
+  glowEnabled: boolean;
   setPage: (page: PageId) => void;
   addStation: (station: Station) => void;
   updateStation: (station: Station) => void;
@@ -47,6 +48,7 @@ interface AppState {
   toggleShuffle: () => void;
   cycleRepeat: () => void;
   setProgress: (position: number, duration: number) => void;
+  setGlowEnabled: (value: boolean) => void;
   skip: (direction: 1 | -1) => void;
   stop: () => void;
 }
@@ -75,6 +77,7 @@ export const useAppStore = create<AppState>()(
       repeat: 'off',
       position: 0,
       duration: 0,
+      glowEnabled: false,
       setPage: (page) => set({ page }),
       addStation: (station) => set((state) => ({ stations: [...state.stations, station] })),
       updateStation: (station) => set((state) => ({
@@ -144,6 +147,7 @@ export const useAppStore = create<AppState>()(
       toggleShuffle: () => set((state) => ({ shuffle: !state.shuffle })),
       cycleRepeat: () => set((state) => ({ repeat: state.repeat === 'off' ? 'all' : state.repeat === 'all' ? 'one' : 'off' })),
       setProgress: (position, duration) => set({ position, duration }),
+      setGlowEnabled: (value) => set({ glowEnabled: value }),
       skip: (direction) => set((state) => {
         if (!state.current) return state;
         if (state.current.kind === 'station') {
@@ -177,6 +181,7 @@ export const useAppStore = create<AppState>()(
         muted: state.muted,
         shuffle: state.shuffle,
         repeat: state.repeat,
+        glowEnabled: state.glowEnabled,
       }),
       merge: (persisted, current) => {
         const saved = persisted as Partial<AppState>;
