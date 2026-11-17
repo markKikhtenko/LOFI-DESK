@@ -2,6 +2,7 @@ import { Edit3, Heart, MoreHorizontal, Pause, Play, RadioTower, Trash2 } from 'l
 import { useState } from 'react';
 import { useAppStore } from '../stores/useAppStore';
 import type { Station } from '../types';
+import { BiomeScene } from './BiomeScene';
 
 export function StationCard({ station, onEdit }: { station: Station; onEdit?: (station: Station) => void }) {
   const [menu, setMenu] = useState(false);
@@ -23,8 +24,10 @@ export function StationCard({ station, onEdit }: { station: Station; onEdit?: (s
 
   return (
     <article className={`station-card ${active ? 'playing' : ''}`} style={cardStyle}>
-      <div className={`station-art ${station.artwork ? 'has-artwork' : ''}`}>
-        {station.artwork && <img className="station-artwork" src={station.artwork} alt="" />}
+      <div className={`station-art ${station.artwork ? 'has-artwork' : ''} ${station.visual === 'biomes' ? 'has-biome-art' : ''}`}>
+        {station.visual === 'biomes'
+          ? <BiomeScene variant="card" active={active && isPlaying} />
+          : station.artwork && <img className="station-artwork" src={station.artwork} alt="" />}
         <span className="station-orbit" />
         <RadioTower size={30} />
         {active && <span className="live-pill">{isPlaying ? 'В ЭФИРЕ' : 'ПАУЗА'}</span>}

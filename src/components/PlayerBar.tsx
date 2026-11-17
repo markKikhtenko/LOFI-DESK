@@ -18,6 +18,7 @@ import { seekTo } from '../hooks/useAudioEngine';
 import { useAppStore } from '../stores/useAppStore';
 import { formatTime } from '../utils/format';
 import { QUIET_VOLUME_THRESHOLD } from '../utils/volume';
+import { BiomeScene } from './BiomeScene';
 
 export function PlayerBar() {
   const state = useAppStore();
@@ -37,9 +38,11 @@ export function PlayerBar() {
   return (
     <footer className={`player-bar ${state.current ? 'has-media' : ''}`}>
       <div className="now-playing">
-        <div className={`now-art ${station?.artwork ? 'has-station-art' : ''}`} style={station ? { background: `linear-gradient(145deg, ${station.accent}, #28233a)` } : undefined}>
+        <div className={`now-art ${station?.artwork ? 'has-station-art' : ''} ${station?.visual === 'biomes' ? 'has-biome-art' : ''}`} style={station ? { background: `linear-gradient(145deg, ${station.accent}, #28233a)` } : undefined}>
           {track?.cover
             ? <img src={track.cover} alt="" />
+            : station?.visual === 'biomes'
+              ? <BiomeScene variant="mini" active={state.isPlaying && !state.playbackError} />
             : station?.artwork
               ? <img src={station.artwork} alt="" />
               : isRadio ? <RotateCcw size={23} className={state.isPlaying && !state.isBuffering ? 'spin-slow' : ''} /> : <ListMusic size={21} />}

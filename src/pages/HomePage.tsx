@@ -1,5 +1,6 @@
 import { ArrowRight, Headphones, Library, Pause, Play, Radio } from 'lucide-react';
 import { AudioSpectrum } from '../components/AudioSpectrum';
+import { BiomeScene } from '../components/BiomeScene';
 import { StationCard } from '../components/StationCard';
 import { TrackTable } from '../components/TrackTable';
 import { useAppStore } from '../stores/useAppStore';
@@ -13,6 +14,7 @@ export function HomePage() {
   const hasMedia = Boolean(station || track);
   const isAudible = hasMedia && state.isPlaying && !state.isBuffering && !state.playbackError;
   const canVisualize = Boolean(track || station?.isBuiltIn);
+  const hasBiomeVisual = station?.visual === 'biomes' && state.isPlaying;
   const nowTitle = station?.name ?? track?.title ?? 'Ничего не играет';
   const nowSubtitle = station
     ? state.streamTitle ?? 'Прямой радиоэфир'
@@ -22,7 +24,7 @@ export function HomePage() {
 
   return (
     <div className="page home-page">
-      <section className={`hero-panel ${isAudible ? 'is-playing' : ''}`}>
+      <section className={`hero-panel ${isAudible ? 'is-playing' : ''} ${hasBiomeVisual ? 'has-biome-visual' : ''}`}>
         <div className="hero-glow hero-glow-one" /><div className="hero-glow hero-glow-two" />
         <div className="hero-content">
           <p className="eyebrow">Главная</p>
@@ -42,7 +44,9 @@ export function HomePage() {
         </div>
 
         <div className="hero-visual">
-          <div className={`vinyl ${isAudible ? 'is-spinning' : ''}`} aria-hidden="true"><span /><i /></div>
+          {hasBiomeVisual
+            ? <BiomeScene variant="hero" active={!state.playbackError} />
+            : <div className={`vinyl ${isAudible ? 'is-spinning' : ''}`} aria-hidden="true"><span /><i /></div>}
           <div className="hero-now-playing">
             <span className={`hero-playback-state ${isAudible ? 'active' : ''}`}>
               <i />{isAudible ? 'Сейчас играет' : hasMedia ? 'На паузе' : 'Тишина'}

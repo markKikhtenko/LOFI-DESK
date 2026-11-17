@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "LOFI DESK",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "identifier": "com.markkikhtenko.lofidesk",
   "build": {
     "beforeDevCommand": "npm run dev",
@@ -25,7 +25,7 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self' customprotocol: asset:; connect-src 'self' ipc: http://ipc.localhost https://ice5.somafm.com https://ice6.somafm.com https://ice2.somafm.com https://somafm.com https://github.com; media-src 'self' asset: http://asset.localhost https://asset.localhost blob: https://ice5.somafm.com https://ice6.somafm.com https://ice2.somafm.com; img-src 'self' asset: http://asset.localhost https://asset.localhost data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:",
+      "csp": "default-src 'self' customprotocol: asset:; connect-src 'self' ipc: http://ipc.localhost https://ice5.somafm.com https://ice6.somafm.com https://ice2.somafm.com https://somafm.com https://api.laut.fm https://stream.laut.fm https://c418-radio.stream.laut.fm https://github.com; media-src 'self' asset: http://asset.localhost https://asset.localhost blob: https://ice5.somafm.com https://ice6.somafm.com https://ice2.somafm.com https://stream.laut.fm https://c418-radio.stream.laut.fm; img-src 'self' asset: http://asset.localhost https://asset.localhost data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:",
       "assetProtocol": {
         "enable": true,
         "scope": []

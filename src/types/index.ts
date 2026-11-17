@@ -6,6 +6,8 @@ export type AutoSwitchMinutes = 0 | 15 | 30 | 60;
 
 export type StationCategory = 'downtempo' | 'ambient' | 'chillout' | 'custom';
 
+export type StationVisual = 'biomes';
+
 export interface Station {
   id: string;
   name: string;
@@ -13,9 +15,11 @@ export interface Station {
   streamUrl: string;
   streamFallbackUrls?: string[];
   metadataUrl?: string;
+  provider?: string;
   category: StationCategory;
   accent: string;
   artwork?: string;
+  visual?: StationVisual;
   isBuiltIn: boolean;
 }
 

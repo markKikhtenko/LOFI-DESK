@@ -179,7 +179,11 @@ fn metadata_from_value(value: &serde_json::Value) -> Option<String> {
         .trim();
     let artist = item
         .get("artist")
-        .and_then(|field| field.as_str())
+        .and_then(|field| {
+            field
+                .as_str()
+                .or_else(|| field.get("name").and_then(|name| name.as_str()))
+        })
         .unwrap_or("")
         .trim();
     match (artist.is_empty(), title.is_empty()) {
@@ -191,7 +195,12 @@ fn metadata_from_value(value: &serde_json::Value) -> Option<String> {
 
 #[tauri::command]
 async fn fetch_station_metadata(url: String) -> Result<Option<String>, String> {
-    if !url.starts_with("https://somafm.com/") {
+    let parsed_url = reqwest::Url::parse(&url).map_err(|error| error.to_string())?;
+    let allowed_host = matches!(
+        parsed_url.host_str(),
+        Some("somafm.com") | Some("api.laut.fm")
+    );
+    if parsed_url.scheme() != "https" || !allowed_host {
         return Ok(None);
     }
     let client = reqwest::Client::builder()
@@ -285,6 +294,18 @@ mod tests {
         assert_eq!(
             metadata_from_value(&value),
             Some("Artist — Track".to_string())
+        );
+    }
+
+    #[test]
+    fn extracts_laut_fm_song_metadata() {
+        let value = json!({
+            "artist": { "name": "C418" },
+            "title": "Sweden"
+        });
+        assert_eq!(
+            metadata_from_value(&value),
+            Some("C418 — Sweden".to_string())
         );
     }
 }

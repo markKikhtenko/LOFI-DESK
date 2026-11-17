@@ -138,7 +138,7 @@ export function useAudioEngine() {
       const artwork = station?.artwork ?? track?.cover;
       navigator.mediaSession.metadata = new MediaMetadata({
         title: station?.name ?? track!.title,
-        artist: station ? 'SomaFM / интернет-радио' : track!.artist,
+        artist: station ? `${station.provider ?? 'Интернет-радио'} / интернет-радио` : track!.artist,
         album: station ? 'LOFI DESK' : track!.album,
         artwork: artwork ? [{ src: artwork }] : undefined,
       });

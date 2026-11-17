@@ -37,8 +37,53 @@ button:not(:disabled) { cursor: pointer; }
 .app-shell.glow-on::before { opacity: .72; animation-play-state: running; }
 .app-shell.glow-on::after { opacity: .58; animation-play-state: running; }
 .app-shell > * { position: relative; z-index: 1; }
+.app-shell > .biome-scene--backdrop { position: absolute; z-index: 0; }
 @keyframes ambient-drift-one { 0% { transform: translate3d(-4%, -2%, 0) scale(.94) rotate(-7deg); filter: blur(54px) saturate(112%) hue-rotate(-8deg); } 50% { transform: translate3d(-14%, 11%, 0) scale(1.08) rotate(3deg); filter: blur(62px) saturate(126%) hue-rotate(14deg); } 100% { transform: translate3d(6%, 18%, 0) scale(1) rotate(10deg); filter: blur(50px) saturate(118%) hue-rotate(30deg); } }
 @keyframes ambient-drift-two { 0% { transform: translate3d(-9%, 1%, 0) scale(1.03) rotate(8deg); filter: blur(58px) saturate(116%) hue-rotate(8deg); } 48% { transform: translate3d(7%, -15%, 0) scale(.94) rotate(-4deg); filter: blur(48px) saturate(128%) hue-rotate(-18deg); } 100% { transform: translate3d(15%, -5%, 0) scale(1.1) rotate(-11deg); filter: blur(64px) saturate(120%) hue-rotate(-34deg); } }
+
+.biome-scene { position: relative; display: block; overflow: hidden; pointer-events: none; isolation: isolate; image-rendering: pixelated; }
+.biome-phase, .biome-phase > i { position: absolute; display: block; }
+.biome-phase { inset: 0; overflow: hidden; opacity: 0; animation-duration: 48s; animation-timing-function: linear; animation-iteration-count: infinite; animation-play-state: paused; }
+.biome-scene.is-alive .biome-phase, .biome-scene.is-alive .biome-phase > i { animation-play-state: running; }
+.biome-meadow { opacity: 1; animation-name: biome-meadow-cycle; }
+.biome-desert { animation-name: biome-desert-cycle; }
+.biome-snow { animation-name: biome-snow-cycle; }
+.biome-meadow { --sky-top: #49677f; --sky-bottom: #b59f7f; --orb: #f3d9a1; --ridge-back: #6f7a70; --ridge-front: #4e6557; --ground-back: #58724f; --ground: #3f5b3f; --soil: #67523b; --plant: #2f4937; --plant-light: #536e4d; }
+.biome-desert { --sky-top: #665979; --sky-bottom: #c68d6d; --orb: #f0c487; --ridge-back: #997465; --ridge-front: #7e5f55; --ground-back: #9d7a52; --ground: #80613f; --soil: #614734; --plant: #485b48; --plant-light: #68745a; }
+.biome-snow { --sky-top: #263d59; --sky-bottom: #748a98; --orb: #e9e4c6; --ridge-back: #657b88; --ridge-front: #435e6d; --ground-back: #9baeb0; --ground: #718b8b; --soil: #40545a; --plant: #263f47; --plant-light: #4f6b6d; }
+.biome-sky { z-index: 0; inset: 0; background: linear-gradient(180deg, var(--sky-top), var(--sky-bottom) 72%, color-mix(in srgb, var(--ground-back) 70%, var(--sky-bottom))); }
+.biome-sky::after { position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.02) 1px, transparent 1px); background-size: 12px 12px; content: ''; opacity: .25; }
+.biome-orb { z-index: 1; top: 15%; right: 17%; width: 11%; aspect-ratio: 1; background: var(--orb); box-shadow: 0 0 26px color-mix(in srgb, var(--orb) 34%, transparent); animation: biome-orb-float 20s ease-in-out infinite alternate; animation-play-state: paused; }
+.biome-snow .biome-orb { border-radius: 50%; opacity: .88; }
+.biome-cloud { z-index: 2; width: 16%; height: 4%; background: rgba(226,224,215,.22); box-shadow: .45em -.32em 0 rgba(226,224,215,.17), 1em 0 0 rgba(226,224,215,.13); animation: biome-cloud-drift 30s ease-in-out infinite alternate; animation-play-state: paused; }
+.biome-cloud-one { top: 25%; left: 13%; }
+.biome-cloud-two { top: 37%; left: 54%; transform: scale(.7); animation-direction: alternate-reverse; animation-duration: 37s; }
+.biome-ridge { z-index: 3; right: -5%; bottom: 25%; left: -5%; transform-origin: bottom; }
+.biome-ridge-back { height: 42%; background: var(--ridge-back); clip-path: polygon(0 100%, 0 72%, 9% 72%, 9% 58%, 18% 58%, 18% 41%, 28% 41%, 28% 54%, 38% 54%, 38% 28%, 49% 28%, 49% 45%, 61% 45%, 61% 34%, 72% 34%, 72% 53%, 82% 53%, 82% 39%, 92% 39%, 92% 62%, 100% 62%, 100% 100%); opacity: .72; }
+.biome-ridge-front { height: 31%; background: var(--ridge-front); clip-path: polygon(0 100%, 0 68%, 12% 68%, 12% 48%, 24% 48%, 24% 64%, 36% 64%, 36% 34%, 49% 34%, 49% 57%, 61% 57%, 61% 43%, 76% 43%, 76% 66%, 88% 66%, 88% 50%, 100% 50%, 100% 100%); }
+.biome-ground { z-index: 4; right: -4%; bottom: -2%; left: -4%; background-color: var(--ground); background-image: linear-gradient(180deg, var(--ground-back) 0 18%, transparent 19%), repeating-linear-gradient(90deg, rgba(255,255,255,.035) 0 1px, transparent 1px 12px), repeating-linear-gradient(0deg, rgba(0,0,0,.04) 0 1px, transparent 1px 12px), linear-gradient(180deg, var(--ground) 0 62%, var(--soil) 63%); }
+.biome-ground-back { bottom: 10%; height: 25%; clip-path: polygon(0 34%, 12% 34%, 12% 16%, 25% 16%, 25% 42%, 39% 42%, 39% 22%, 55% 22%, 55% 50%, 70% 50%, 70% 28%, 85% 28%, 85% 43%, 100% 43%, 100% 100%, 0 100%); opacity: .72; }
+.biome-ground-front { height: 25%; clip-path: polygon(0 40%, 10% 40%, 10% 28%, 23% 28%, 23% 46%, 38% 46%, 38% 18%, 54% 18%, 54% 34%, 66% 34%, 66% 12%, 80% 12%, 80% 31%, 91% 31%, 91% 21%, 100% 21%, 100% 100%, 0 100%); }
+.biome-plant { z-index: 5; bottom: 19%; width: 3.2%; height: 22%; background: var(--plant); box-shadow: inset -2px 0 rgba(0,0,0,.12); }
+.biome-plant::before { position: absolute; left: 50%; bottom: 56%; width: 440%; height: 80%; background: var(--plant-light); clip-path: polygon(38% 0, 62% 0, 62% 18%, 76% 18%, 76% 36%, 91% 36%, 91% 66%, 65% 66%, 65% 100%, 35% 100%, 35% 66%, 9% 66%, 9% 36%, 24% 36%, 24% 18%, 38% 18%); content: ''; transform: translateX(-50%); }
+.biome-plant-one { left: 19%; }
+.biome-plant-two { right: 23%; bottom: 22%; transform: scale(.72); transform-origin: bottom; }
+.biome-desert .biome-plant { width: 2.8%; height: 20%; border-radius: 2px 2px 0 0; }
+.biome-desert .biome-plant::before { left: -75%; bottom: 36%; width: 250%; height: 48%; background: var(--plant); clip-path: polygon(0 18%, 28% 18%, 28% 54%, 42% 54%, 42% 34%, 58% 34%, 58% 72%, 72% 72%, 72% 0, 100% 0, 100% 82%, 72% 82%, 72% 100%, 28% 100%, 28% 72%, 0 72%); transform: none; }
+.biome-snow .biome-plant::before { bottom: 46%; width: 390%; height: 108%; clip-path: polygon(50% 0, 68% 28%, 61% 28%, 80% 57%, 68% 57%, 91% 92%, 9% 92%, 32% 57%, 20% 57%, 39% 28%, 32% 28%); }
+.biome-haze { position: absolute; z-index: 6; inset: 0; display: block; background: linear-gradient(180deg, rgba(255,255,255,.035), transparent 45%, rgba(6,8,11,.18)); box-shadow: inset 0 0 40px rgba(7,9,13,.3); }
+.biome-scene--backdrop { top: 0; right: 0; bottom: var(--player-height); left: var(--sidebar-width); opacity: 0; transform: scale(1.025); transition: opacity 2.4s ease; -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 16%, #000 86%, transparent 100%); mask-image: linear-gradient(90deg, transparent 0, #000 16%, #000 86%, transparent 100%); }
+.biome-scene--backdrop.is-alive { opacity: .3; }
+.biome-scene--hero { position: absolute; inset: 1px 0 30px 18px; border: 1px solid rgba(255,255,255,.09); border-radius: 15px; box-shadow: 0 22px 60px rgba(0,0,0,.38); }
+.biome-scene--card { position: absolute; inset: 0; transition: transform .45s ease, filter .45s ease; }
+.biome-scene--mini { position: absolute; inset: 0; }
+.biome-scene--card .biome-cloud, .biome-scene--mini .biome-cloud { opacity: .65; }
+.biome-scene--mini .biome-haze { box-shadow: inset 0 0 12px rgba(7,9,13,.35); }
+@keyframes biome-meadow-cycle { 0%, 26% { opacity: 1; } 34%, 92% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes biome-desert-cycle { 0%, 25% { opacity: 0; } 33%, 59% { opacity: 1; } 67%, 100% { opacity: 0; } }
+@keyframes biome-snow-cycle { 0%, 58% { opacity: 0; } 66%, 92% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes biome-cloud-drift { from { translate: -4% 0; } to { translate: 9% 12%; } }
+@keyframes biome-orb-float { from { translate: 0 0; } to { translate: -12% 9%; } }
 .sidebar { grid-row: 1; display: flex; flex-direction: column; padding: 27px 18px 20px; border-right: 1px solid var(--border); background: rgba(11, 12, 16, .96); }
 .brand { display: flex; align-items: center; gap: 11px; border: 0; background: transparent; padding: 0 9px 30px; font-family: 'Segoe UI Variable Display', 'Segoe UI', sans-serif; font-size: 15px; letter-spacing: .08em; }
 .brand strong { font-weight: 700; }
@@ -85,6 +130,7 @@ button:not(:disabled) { cursor: pointer; }
 
 .hero-panel { position: relative; display: flex; min-height: 315px; overflow: hidden; padding: 47px 50px; border: 1px solid var(--border); border-radius: 20px; background: linear-gradient(115deg, #171721 0%, #14151c 56%, #171722 100%); box-shadow: 0 30px 80px rgba(0,0,0,.22); transition: border-color .4s ease, background .4s ease; }
 .hero-panel.is-playing { border-color: rgba(150,128,231,.16); background: linear-gradient(115deg, #191824 0%, #14151c 56%, #171824 100%); }
+.hero-panel.has-biome-visual { border-color: rgba(130,173,126,.2); background: linear-gradient(115deg, #171b1b 0%, #14171a 56%, #181a20 100%); }
 .hero-content { position: relative; z-index: 2; width: 58%; }
 .hero-content h1 { margin: 11px 0 15px; font-family: 'Segoe UI Variable Display', 'Segoe UI', sans-serif; font-size: clamp(32px, 4vw, 50px); line-height: 1.08; letter-spacing: -.055em; }
 .hero-content h1 span { color: #aaa4bc; font-weight: 500; }
@@ -147,10 +193,13 @@ button:not(:disabled) { cursor: pointer; }
 .station-artwork { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center var(--station-art-y); filter: hue-rotate(var(--station-art-hue)) saturate(.88) brightness(.72); transform: scale(var(--station-art-scale)); transition: filter .3s ease, transform .35s ease; }
 .station-art.has-artwork::after { position: absolute; inset: 0; background: linear-gradient(120deg, rgba(9,10,15,.3), rgba(9,10,15,.05) 52%, rgba(9,10,15,.35)), linear-gradient(to top, rgba(9,10,15,.22), transparent 65%); content: ''; }
 .station-card:hover .station-artwork { filter: hue-rotate(var(--station-art-hue)) saturate(.98) brightness(.82); transform: scale(calc(var(--station-art-scale) + .035)); }
+.station-card:hover .biome-scene--card { filter: saturate(1.08) brightness(1.04); transform: scale(1.035); }
 .station-orbit { position: absolute; z-index: 1; width: 70px; height: 70px; border: 1px solid color-mix(in srgb, var(--station-accent) 18%, transparent); border-radius: 50%; box-shadow: 0 0 0 13px color-mix(in srgb, var(--station-accent) 3%, transparent), 0 0 0 27px color-mix(in srgb, var(--station-accent) 2%, transparent); }
 .station-art.has-artwork .station-orbit { width: 58px; height: 58px; border-color: rgba(255,255,255,.14); background: rgba(11,12,17,.34); box-shadow: 0 8px 28px rgba(0,0,0,.2), 0 0 0 10px rgba(255,255,255,.025); backdrop-filter: blur(5px); }
 .station-art svg { position: relative; z-index: 2; }
 .station-art.has-artwork svg { color: rgba(244,242,249,.82); filter: drop-shadow(0 3px 9px rgba(0,0,0,.38)); }
+.station-art.has-biome-art::after { background: linear-gradient(120deg, rgba(9,12,13,.2), transparent 52%, rgba(9,12,13,.25)), linear-gradient(to top, rgba(7,10,10,.2), transparent 62%); }
+.station-art.has-biome-art .station-orbit { border-color: rgba(230,239,220,.18); background: rgba(16,23,20,.26); }
 .live-pill { position: absolute; z-index: 3; right: 10px; top: 10px; padding: 3px 6px; border: 1px solid color-mix(in srgb, var(--station-accent) 20%, transparent); border-radius: 4px; color: var(--station-accent); background: rgba(14,14,18,.7); font-size: 7px; font-weight: 700; letter-spacing: .1em; backdrop-filter: blur(5px); }
 .station-card-body { padding: 15px; }
 .station-title-row { display: flex; justify-content: space-between; gap: 8px; }
@@ -273,6 +322,7 @@ progress::-webkit-progress-bar { background: #22232c; } progress::-webkit-progre
 .now-playing { display: flex; align-items: center; min-width: 0; gap: 11px; }
 .now-art { display: grid; place-items: center; width: 49px; height: 49px; flex: 0 0 auto; overflow: hidden; border-radius: 8px; color: #8d8e9c; background: #20212a; }
 .now-art.has-station-art img { filter: saturate(.86) brightness(.82); }
+.now-art.has-biome-art { position: relative; border: 1px solid rgba(152,185,144,.16); }
 .now-copy { display: flex; min-width: 0; flex-direction: column; gap: 4px; }
 .now-copy strong, .now-copy span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .now-copy strong { color: #d9d9e0; font-size: 11px; }.now-copy span { color: #6c6d78; font-size: 9px; }
@@ -312,4 +362,7 @@ input[type='range']:disabled { background: #292a32; }
   .app-shell::before, .app-shell::after { animation: none; transition-duration: .2s; }
   .app-shell.glow-on::before { transform: translate3d(-6%, 8%, 0); }
   .app-shell.glow-on::after { transform: translate3d(7%, -5%, 0); }
+  .biome-phase, .biome-phase > i { animation: none; }
+  .biome-meadow { opacity: 1; }
+  .biome-desert, .biome-snow { opacity: 0; }
 }
