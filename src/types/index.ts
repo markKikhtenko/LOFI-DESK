@@ -2,6 +2,8 @@ export type PageId = 'home' | 'radio' | 'library' | 'playlists' | 'favorites' | 
 
 export type RepeatMode = 'off' | 'all' | 'one';
 
+export type AutoSwitchMinutes = 0 | 15 | 30 | 60;
+
 export type StationCategory = 'downtempo' | 'ambient' | 'chillout' | 'custom';
 
 export interface Station {
@@ -13,6 +15,7 @@ export interface Station {
   metadataUrl?: string;
   category: StationCategory;
   accent: string;
+  artwork?: string;
   isBuiltIn: boolean;
 }
 

@@ -17,6 +17,7 @@ import {
 import { seekTo } from '../hooks/useAudioEngine';
 import { useAppStore } from '../stores/useAppStore';
 import { formatTime } from '../utils/format';
+import { QUIET_VOLUME_THRESHOLD } from '../utils/volume';
 
 export function PlayerBar() {
   const state = useAppStore();
@@ -29,12 +30,19 @@ export function PlayerBar() {
     ? state.favoriteStationIds.includes(station.id)
     : track ? state.favoriteTrackIds.includes(track.id) : false;
   const VolumeIcon = state.muted || state.volume === 0 ? VolumeX : state.volume < 0.5 ? Volume1 : Volume2;
+  const sliderVolume = state.muted ? 0 : state.volume;
+  const volumePercent = Math.round(sliderVolume * 100);
+  const isQuietVolume = sliderVolume > 0 && sliderVolume <= QUIET_VOLUME_THRESHOLD;
 
   return (
     <footer className={`player-bar ${state.current ? 'has-media' : ''}`}>
       <div className="now-playing">
-        <div className="now-art" style={station ? { background: `linear-gradient(145deg, ${station.accent}, #28233a)` } : undefined}>
-          {track?.cover ? <img src={track.cover} alt="" /> : isRadio ? <RotateCcw size={23} className={state.isPlaying && !state.isBuffering ? 'spin-slow' : ''} /> : <ListMusic size={21} />}
+        <div className={`now-art ${station?.artwork ? 'has-station-art' : ''}`} style={station ? { background: `linear-gradient(145deg, ${station.accent}, #28233a)` } : undefined}>
+          {track?.cover
+            ? <img src={track.cover} alt="" />
+            : station?.artwork
+              ? <img src={station.artwork} alt="" />
+              : isRadio ? <RotateCcw size={23} className={state.isPlaying && !state.isBuffering ? 'spin-slow' : ''} /> : <ListMusic size={21} />}
         </div>
         <div className="now-copy"><strong>{title}</strong><span title={subtitle}>{subtitle}</span></div>
         <button
@@ -80,15 +88,19 @@ export function PlayerBar() {
         <button className="icon-button" onClick={() => state.setMuted(!state.muted)} aria-label="Выключить звук"><VolumeIcon size={18} /></button>
         <input
           aria-label="Громкость"
+          aria-valuetext={state.muted ? 'Без звука' : isQuietVolume ? `Супертихий режим, ${volumePercent}%` : `${volumePercent}%`}
+          title={isQuietVolume ? 'Супертихий режим: точная регулировка фоновой громкости' : 'Громкость'}
           type="range"
           min="0"
           max="1"
           step="0.005"
-          value={state.muted ? 0 : state.volume}
+          value={sliderVolume}
           onChange={(event) => state.setVolume(Number(event.target.value))}
-          style={{ '--range-progress': `${(state.muted ? 0 : state.volume) * 100}%` } as React.CSSProperties}
+          style={{ '--range-progress': `${sliderVolume * 100}%` } as React.CSSProperties}
         />
-        <span className="volume-value">{Math.round((state.muted ? 0 : state.volume) * 100)}%</span>
+        <span className={`volume-value ${isQuietVolume ? 'is-quiet' : ''}`}>
+          {isQuietVolume && <small>тихо</small>}{volumePercent}%
+        </span>
       </div>
     </footer>
   );

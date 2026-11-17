@@ -1,3 +1,6 @@
+import ambientArtwork from '../assets/stations/ambient.webp';
+import chilloutArtwork from '../assets/stations/chillout.webp';
+import downtempoArtwork from '../assets/stations/downtempo.webp';
 import type { Station, StationCategory } from '../types';
 
 export const STATION_CATEGORIES: Array<{ id: StationCategory; label: string; description: string }> = [
@@ -6,6 +9,12 @@ export const STATION_CATEGORIES: Array<{ id: StationCategory; label: string; des
   { id: 'chillout', label: 'Чиллаут', description: 'Лаунж, вокал и расслабленная электроника' },
   { id: 'custom', label: 'Мои станции', description: 'Добавленные вручную потоки' },
 ];
+
+const STATION_ARTWORK: Partial<Record<StationCategory, string>> = {
+  downtempo: downtempoArtwork,
+  ambient: ambientArtwork,
+  chillout: chilloutArtwork,
+};
 
 function somaStation(
   id: string,
@@ -28,6 +37,7 @@ function somaStation(
     metadataUrl: `https://somafm.com/songs/${channel}.json`,
     category,
     accent,
+    artwork: STATION_ARTWORK[category],
     isBuiltIn: true,
   };
 }
@@ -128,5 +138,53 @@ export const DEFAULT_STATIONS: Station[] = [
     'Винтажный lounge, exotica и лёгкая музыка середины века.',
     'chillout',
     '#c88972',
+  ),
+  somaStation(
+    'somafm-defcon',
+    'defcon',
+    'DEF CON Radio',
+    'Трип-хоп, IDM и атмосферная электроника из легендарной хакерской chill room.',
+    'downtempo',
+    '#74b29b',
+  ),
+  somaStation(
+    'somafm-fluid',
+    'fluid',
+    'Fluid',
+    'Инструментальный хип-хоп, future soul и liquid trap без лишнего шума.',
+    'downtempo',
+    '#7195b8',
+  ),
+  somaStation(
+    'somafm-cliqhop',
+    'cliqhop',
+    'Cliqhop IDM',
+    'Умная электроника, дробные биты и мягкие цифровые текстуры для концентрации.',
+    'downtempo',
+    '#9b83c9',
+  ),
+  somaStation(
+    'somafm-drone-zone-2',
+    'dz2',
+    'Drone Zone 2',
+    'Более эклектичный вариант Drone Zone: атмосферные слои и минимум ритма.',
+    'ambient',
+    '#648ca1',
+  ),
+  somaStation(
+    'somafm-dark-zone',
+    'darkzone',
+    'The Dark Zone',
+    'Тёмный глубокий ambient для ночной работы и полного погружения.',
+    'ambient',
+    '#665f88',
+  ),
+  somaStation(
+    'somafm-n5md',
+    'n5md',
+    'n5MD Radio',
+    'Ambient, современная композиция, post-rock и экспериментальная электроника.',
+    'ambient',
+    '#8e7897',
   ),
 ];

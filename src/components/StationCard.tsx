@@ -13,10 +13,18 @@ export function StationCard({ station, onEdit }: { station: Station; onEdit?: (s
   const toggleFavorite = useAppStore((state) => state.toggleFavoriteStation);
   const removeStation = useAppStore((state) => state.removeStation);
   const active = current?.kind === 'station' && current.id === station.id;
+  const artHash = [...station.id].reduce((total, character) => total + character.charCodeAt(0), 0);
+  const cardStyle = {
+    '--station-accent': station.accent,
+    '--station-art-y': `${18 + (artHash % 65)}%`,
+    '--station-art-hue': `${(artHash % 31) - 15}deg`,
+    '--station-art-scale': 1.02 + (artHash % 4) * 0.025,
+  } as React.CSSProperties;
 
   return (
-    <article className={`station-card ${active ? 'playing' : ''}`} style={{ '--station-accent': station.accent } as React.CSSProperties}>
-      <div className="station-art">
+    <article className={`station-card ${active ? 'playing' : ''}`} style={cardStyle}>
+      <div className={`station-art ${station.artwork ? 'has-artwork' : ''}`}>
+        {station.artwork && <img className="station-artwork" src={station.artwork} alt="" />}
         <span className="station-orbit" />
         <RadioTower size={30} />
         {active && <span className="live-pill">{isPlaying ? 'В ЭФИРЕ' : 'ПАУЗА'}</span>}
@@ -49,4 +57,3 @@ export function StationCard({ station, onEdit }: { station: Station; onEdit?: (s
     </article>
   );
 }
-

@@ -3,10 +3,11 @@ import { check, type Update } from '@tauri-apps/plugin-updater';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { isTauri } from '../services/tauri';
 import type { UpdateState } from '../types';
+import packageJson from '../../package.json';
 
 const initialState: UpdateState = {
   status: 'idle',
-  currentVersion: '0.2.2',
+  currentVersion: packageJson.version,
   progress: 0,
 };
 

@@ -1,14 +1,17 @@
-import { CheckCircle2, Download, ExternalLink, FolderOpen, Info, RefreshCw } from 'lucide-react';
+import { CheckCircle2, Download, ExternalLink, FolderOpen, Info, RadioTower, RefreshCw } from 'lucide-react';
 import { PageHeader } from '../components/PageHeader';
 import { isTauri } from '../services/tauri';
 import type { UpdateState } from '../types';
 import { useAppStore } from '../stores/useAppStore';
 import { fileName } from '../utils/format';
+import type { AutoSwitchMinutes } from '../types';
 
 export function SettingsPage({ update, onCheck, onInstall }: { update: UpdateState; onCheck: () => void; onInstall: () => void }) {
   const folders = useAppStore((state) => state.folders);
   const volume = useAppStore((state) => state.volume);
   const setVolume = useAppStore((state) => state.setVolume);
+  const autoSwitchMinutes = useAppStore((state) => state.autoSwitchMinutes);
+  const setAutoSwitchMinutes = useAppStore((state) => state.setAutoSwitchMinutes);
   const busy = update.status === 'checking' || update.status === 'downloading';
   return (
     <div className="page settings-page">
@@ -36,6 +39,7 @@ export function SettingsPage({ update, onCheck, onInstall }: { update: UpdateSta
         <section className="settings-card">
           <div className="settings-card-title"><span className="settings-icon amber"><Info size={19} /></span><div><h2>Воспроизведение</h2><p>Общие параметры аудио</p></div></div>
           <label className="setting-control"><span><strong>Громкость по умолчанию</strong><small>Сохраняется между запусками</small></span><div><input type="range" min="0" max="1" step="0.01" value={volume} onChange={(event) => setVolume(Number(event.target.value))} style={{ '--range-progress': `${volume * 100}%` } as React.CSSProperties} /><b>{Math.round(volume * 100)}%</b></div></label>
+          <label className="setting-control"><span><strong><RadioTower size={14} />Автосмена станций</strong><small>Плавное затухание перед следующим эфиром</small></span><select className="setting-select" value={autoSwitchMinutes} onChange={(event) => setAutoSwitchMinutes(Number(event.target.value) as AutoSwitchMinutes)}><option value={0}>Выключена</option><option value={15}>Каждые 15 минут</option><option value={30}>Каждые 30 минут</option><option value={60}>Каждые 60 минут</option></select></label>
         </section>
 
         <section className="settings-card about-card">

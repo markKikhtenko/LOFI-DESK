@@ -2,12 +2,23 @@ import { convertFileSrc } from '@tauri-apps/api/core';
 import { useEffect, useRef } from 'react';
 import { readRadioMetadata, restoreMediaScopes } from '../services/tauri';
 import { useAppStore } from '../stores/useAppStore';
+import { AUTO_SWITCH_FADE_IN_MS, AUTO_SWITCH_FADE_OUT_MS, smoothFadeProgress } from '../utils/fade';
+import { getRadioRetryDelay } from '../utils/radio';
+import { sliderToAudioVolume } from '../utils/volume';
 
 const audio = new Audio();
 audio.preload = 'metadata';
 let audioContext: AudioContext | null = null;
 let analyser: AnalyserNode | null = null;
 let capturedSource: MediaStreamAudioSourceNode | null = null;
+const STALLED_STREAM_TIMEOUT_MS = 12_000;
+
+interface ReconnectOptions {
+  immediate?: boolean;
+  networkRestored?: boolean;
+}
+
+type AutoSwitchPhase = 'idle' | 'fading-out' | 'loading-next';
 
 function connectAudioAnalysis() {
   if (!audioContext || !analyser || capturedSource) return;
@@ -64,24 +75,41 @@ export function useAudioEngine() {
   const stations = useAppStore((state) => state.stations);
   const tracks = useAppStore((state) => state.tracks);
   const folders = useAppStore((state) => state.folders);
+  const autoSwitchMinutes = useAppStore((state) => state.autoSwitchMinutes);
   const retryRef = useRef(0);
   const retryTimerRef = useRef<number | undefined>(undefined);
+  const stalledTimerRef = useRef<number | undefined>(undefined);
   const stationSourcesRef = useRef<string[]>([]);
   const stationSourceIndexRef = useRef(0);
+  const requestReconnectRef = useRef<(options?: ReconnectOptions) => void>(() => undefined);
+  const autoSwitchTimerRef = useRef<number | undefined>(undefined);
+  const fadeFrameRef = useRef<number | undefined>(undefined);
+  const fadeGainRef = useRef(1);
+  const autoSwitchPhaseRef = useRef<AutoSwitchPhase>('idle');
+  const beginAutoSwitchRef = useRef<() => void>(() => undefined);
+  const cancelFadeRef = useRef<(restoreVolume?: boolean) => void>(() => undefined);
 
   useEffect(() => {
     void restoreMediaScopes(folders).catch(() => undefined);
   }, [folders]);
 
   useEffect(() => {
-    audio.volume = volume;
+    audio.volume = sliderToAudioVolume(volume) * fadeGainRef.current;
     audio.muted = muted;
   }, [volume, muted]);
 
   useEffect(() => {
     const store = useAppStore.getState();
+    if (autoSwitchPhaseRef.current === 'fading-out') {
+      autoSwitchPhaseRef.current = 'idle';
+      cancelFadeRef.current(true);
+    } else if (autoSwitchPhaseRef.current !== 'loading-next') {
+      cancelFadeRef.current(true);
+    }
     window.clearTimeout(retryTimerRef.current);
     retryTimerRef.current = undefined;
+    window.clearTimeout(stalledTimerRef.current);
+    stalledTimerRef.current = undefined;
     retryRef.current = 0;
     stationSourceIndexRef.current = 0;
     audio.pause();
@@ -107,11 +135,12 @@ export function useAudioEngine() {
     audio.load();
 
     if ('mediaSession' in navigator) {
+      const artwork = station?.artwork ?? track?.cover;
       navigator.mediaSession.metadata = new MediaMetadata({
         title: station?.name ?? track!.title,
         artist: station ? 'SomaFM / интернет-радио' : track!.artist,
         album: station ? 'LOFI DESK' : track!.album,
-        artwork: track?.cover ? [{ src: track.cover }] : undefined,
+        artwork: artwork ? [{ src: artwork }] : undefined,
       });
     }
 
@@ -125,28 +154,162 @@ export function useAudioEngine() {
       void audio.play().catch((error: unknown) => {
         const state = useAppStore.getState();
         if (state.current?.kind === 'station' && !(error instanceof DOMException && error.name === 'NotAllowedError')) {
-          // A media error event owns retries and source failover for live streams.
+          requestReconnectRef.current();
           return;
         }
         state.setPlaybackError(describePlaybackError(error));
         state.setPlaying(false);
       });
     } else {
+      autoSwitchPhaseRef.current = 'idle';
+      cancelFadeRef.current(true);
+      window.clearTimeout(retryTimerRef.current);
+      retryTimerRef.current = undefined;
+      window.clearTimeout(stalledTimerRef.current);
+      stalledTimerRef.current = undefined;
       audio.pause();
     }
   }, [current, isPlaying]);
 
   useEffect(() => {
-    const onPlaying = () => {
-      connectAudioAnalysis();
+    const applyFadeGain = () => {
+      const state = useAppStore.getState();
+      audio.volume = sliderToAudioVolume(state.volume) * fadeGainRef.current;
+      audio.muted = state.muted;
+    };
+    const cancelFade = (restoreVolume = false) => {
+      window.cancelAnimationFrame(fadeFrameRef.current ?? 0);
+      fadeFrameRef.current = undefined;
+      if (restoreVolume) {
+        fadeGainRef.current = 1;
+        applyFadeGain();
+      }
+    };
+    const fadeTo = (target: number, duration: number, onComplete?: () => void) => {
+      cancelFade();
+      const startGain = fadeGainRef.current;
+      let startedAt: number | undefined;
+      const step = (timestamp: number) => {
+        startedAt ??= timestamp;
+        const progress = Math.min(1, (timestamp - startedAt) / duration);
+        const eased = smoothFadeProgress(progress);
+        fadeGainRef.current = startGain + (target - startGain) * eased;
+        applyFadeGain();
+        if (progress < 1) fadeFrameRef.current = window.requestAnimationFrame(step);
+        else {
+          fadeFrameRef.current = undefined;
+          onComplete?.();
+        }
+      };
+      fadeFrameRef.current = window.requestAnimationFrame(step);
+    };
+    const beginAutoSwitch = () => {
+      const state = useAppStore.getState();
+      if (state.current?.kind !== 'station' || !state.isPlaying || autoSwitchPhaseRef.current !== 'idle') return;
+      autoSwitchPhaseRef.current = 'fading-out';
+      fadeTo(0, AUTO_SWITCH_FADE_OUT_MS, () => {
+        const latest = useAppStore.getState();
+        if (latest.current?.kind !== 'station' || !latest.isPlaying) {
+          autoSwitchPhaseRef.current = 'idle';
+          fadeTo(1, AUTO_SWITCH_FADE_IN_MS);
+          return;
+        }
+        autoSwitchPhaseRef.current = 'loading-next';
+        latest.skip(1);
+      });
+    };
+    cancelFadeRef.current = cancelFade;
+    beginAutoSwitchRef.current = beginAutoSwitch;
+
+    const showRecoveryState = (message: string) => {
+      const state = useAppStore.getState();
+      state.setPlaybackError(message);
+      state.setBuffering(true);
+    };
+    const clearRetryTimer = () => {
       window.clearTimeout(retryTimerRef.current);
       retryTimerRef.current = undefined;
+    };
+    const clearStalledTimer = () => {
+      window.clearTimeout(stalledTimerRef.current);
+      stalledTimerRef.current = undefined;
+    };
+    const scheduleReconnect = (options: ReconnectOptions = {}) => {
+      const state = useAppStore.getState();
+      if (state.current?.kind !== 'station' || !state.isPlaying || retryTimerRef.current !== undefined) return;
+
+      clearStalledTimer();
+      if (!navigator.onLine) {
+        showRecoveryState('Нет сети. Эфир продолжится автоматически после подключения.');
+        retryTimerRef.current = window.setTimeout(() => {
+          retryTimerRef.current = undefined;
+          scheduleReconnect();
+        }, 5_000);
+        return;
+      }
+
+      retryRef.current += 1;
+      const attempt = retryRef.current;
+      const delay = options.immediate ? 0 : getRadioRetryDelay(attempt);
+      showRecoveryState(options.networkRestored
+        ? 'Сеть вернулась. Восстанавливаем эфир…'
+        : delay === 0
+          ? 'Восстанавливаем эфир…'
+          : `Связь с эфиром потеряна. Повтор через ${Math.ceil(delay / 1_000)} с…`);
+
+      retryTimerRef.current = window.setTimeout(() => {
+        retryTimerRef.current = undefined;
+        const latest = useAppStore.getState();
+        if (latest.current?.kind !== 'station' || !latest.isPlaying) return;
+        if (!navigator.onLine) {
+          scheduleReconnect();
+          return;
+        }
+
+        const sources = stationSourcesRef.current;
+        if (sources.length > 1) {
+          stationSourceIndexRef.current = (stationSourceIndexRef.current + 1) % sources.length;
+        }
+        const nextSource = sources[stationSourceIndexRef.current];
+        if (nextSource) audio.src = nextSource;
+        audio.load();
+        void audio.play().catch((error: unknown) => {
+          if (error instanceof DOMException && error.name === 'NotAllowedError') {
+            const currentState = useAppStore.getState();
+            currentState.setPlaybackError(describePlaybackError(error));
+            currentState.setPlaying(false);
+            return;
+          }
+          scheduleReconnect();
+        });
+      }, delay);
+    };
+    requestReconnectRef.current = scheduleReconnect;
+
+    const onPlaying = () => {
+      connectAudioAnalysis();
+      clearRetryTimer();
+      clearStalledTimer();
       retryRef.current = 0;
       useAppStore.getState().setBuffering(false);
       useAppStore.getState().setPlaybackError(null);
+      if (autoSwitchPhaseRef.current === 'loading-next') {
+        autoSwitchPhaseRef.current = 'idle';
+        fadeGainRef.current = 0;
+        applyFadeGain();
+        fadeTo(1, AUTO_SWITCH_FADE_IN_MS);
+      }
       if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
     };
-    const onWaiting = () => useAppStore.getState().setBuffering(true);
+    const onWaiting = () => {
+      const state = useAppStore.getState();
+      state.setBuffering(true);
+      if (state.current?.kind !== 'station' || !state.isPlaying || stalledTimerRef.current !== undefined) return;
+      stalledTimerRef.current = window.setTimeout(() => {
+        stalledTimerRef.current = undefined;
+        scheduleReconnect();
+      }, STALLED_STREAM_TIMEOUT_MS);
+    };
     const onPause = () => {
       if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused';
     };
@@ -162,28 +325,23 @@ export function useAudioEngine() {
     };
     const onError = () => {
       const state = useAppStore.getState();
-      if (retryTimerRef.current !== undefined) return;
-      if (state.current?.kind === 'station' && state.isPlaying && retryRef.current < 4) {
-        retryRef.current += 1;
-        const sources = stationSourcesRef.current;
-        if (sources.length > 1) {
-          stationSourceIndexRef.current = (stationSourceIndexRef.current + 1) % sources.length;
-        }
-        state.setPlaybackError(sources.length > 1
-          ? `Поток прерван. Подключаем резервный сервер ${retryRef.current}/4…`
-          : `Поток прерван. Повторное подключение ${retryRef.current}/4…`);
-        state.setBuffering(true);
-        retryTimerRef.current = window.setTimeout(() => {
-          retryTimerRef.current = undefined;
-          const nextSource = sources[stationSourceIndexRef.current];
-          if (nextSource) audio.src = nextSource;
-          audio.load();
-          void audio.play().catch(() => undefined);
-        }, Math.min(12_000, retryRef.current * 2_000));
-      } else {
+      if (state.current?.kind === 'station' && state.isPlaying) scheduleReconnect();
+      else {
         state.setPlaybackError('Источник недоступен или формат не поддерживается.');
         state.setPlaying(false);
       }
+    };
+    const onOffline = () => {
+      const state = useAppStore.getState();
+      if (state.current?.kind !== 'station' || !state.isPlaying) return;
+      clearRetryTimer();
+      scheduleReconnect();
+    };
+    const onOnline = () => {
+      const state = useAppStore.getState();
+      if (state.current?.kind !== 'station' || !state.isPlaying) return;
+      clearRetryTimer();
+      scheduleReconnect({ immediate: true, networkRestored: true });
     };
 
     audio.addEventListener('playing', onPlaying);
@@ -194,6 +352,8 @@ export function useAudioEngine() {
     audio.addEventListener('durationchange', onTime);
     audio.addEventListener('ended', onEnded);
     audio.addEventListener('error', onError);
+    window.addEventListener('offline', onOffline);
+    window.addEventListener('online', onOnline);
 
     if ('mediaSession' in navigator) {
       const state = () => useAppStore.getState();
@@ -206,8 +366,12 @@ export function useAudioEngine() {
     }
 
     return () => {
-      window.clearTimeout(retryTimerRef.current);
-      retryTimerRef.current = undefined;
+      requestReconnectRef.current = () => undefined;
+      beginAutoSwitchRef.current = () => undefined;
+      cancelFadeRef.current = () => undefined;
+      cancelFade(true);
+      clearRetryTimer();
+      clearStalledTimer();
       audio.removeEventListener('playing', onPlaying);
       audio.removeEventListener('waiting', onWaiting);
       audio.removeEventListener('stalled', onWaiting);
@@ -216,8 +380,24 @@ export function useAudioEngine() {
       audio.removeEventListener('durationchange', onTime);
       audio.removeEventListener('ended', onEnded);
       audio.removeEventListener('error', onError);
+      window.removeEventListener('offline', onOffline);
+      window.removeEventListener('online', onOnline);
     };
   }, []);
+
+  useEffect(() => {
+    window.clearTimeout(autoSwitchTimerRef.current);
+    autoSwitchTimerRef.current = undefined;
+    if (autoSwitchMinutes === 0 || current?.kind !== 'station' || !isPlaying) return;
+    autoSwitchTimerRef.current = window.setTimeout(
+      () => beginAutoSwitchRef.current(),
+      autoSwitchMinutes * 60_000,
+    );
+    return () => {
+      window.clearTimeout(autoSwitchTimerRef.current);
+      autoSwitchTimerRef.current = undefined;
+    };
+  }, [autoSwitchMinutes, current?.id, current?.kind, isPlaying]);
 
   useEffect(() => {
     if (current?.kind !== 'station') return;

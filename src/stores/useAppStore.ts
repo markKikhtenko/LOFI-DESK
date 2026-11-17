@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { DEFAULT_STATIONS } from '../data/stations';
-import type { PageId, Playlist, PlayingItem, RepeatMode, Station, Track } from '../types';
+import type { AutoSwitchMinutes, PageId, Playlist, PlayingItem, RepeatMode, Station, Track } from '../types';
 
 interface AppState {
   page: PageId;
@@ -24,6 +24,7 @@ interface AppState {
   position: number;
   duration: number;
   glowEnabled: boolean;
+  autoSwitchMinutes: AutoSwitchMinutes;
   setPage: (page: PageId) => void;
   addStation: (station: Station) => void;
   updateStation: (station: Station) => void;
@@ -49,6 +50,7 @@ interface AppState {
   cycleRepeat: () => void;
   setProgress: (position: number, duration: number) => void;
   setGlowEnabled: (value: boolean) => void;
+  setAutoSwitchMinutes: (value: AutoSwitchMinutes) => void;
   skip: (direction: 1 | -1) => void;
   stop: () => void;
 }
@@ -78,6 +80,7 @@ export const useAppStore = create<AppState>()(
       position: 0,
       duration: 0,
       glowEnabled: false,
+      autoSwitchMinutes: 0,
       setPage: (page) => set({ page }),
       addStation: (station) => set((state) => ({ stations: [...state.stations, station] })),
       updateStation: (station) => set((state) => ({
@@ -148,6 +151,7 @@ export const useAppStore = create<AppState>()(
       cycleRepeat: () => set((state) => ({ repeat: state.repeat === 'off' ? 'all' : state.repeat === 'all' ? 'one' : 'off' })),
       setProgress: (position, duration) => set({ position, duration }),
       setGlowEnabled: (value) => set({ glowEnabled: value }),
+      setAutoSwitchMinutes: (value) => set({ autoSwitchMinutes: value }),
       skip: (direction) => set((state) => {
         if (!state.current) return state;
         if (state.current.kind === 'station') {
@@ -182,6 +186,7 @@ export const useAppStore = create<AppState>()(
         shuffle: state.shuffle,
         repeat: state.repeat,
         glowEnabled: state.glowEnabled,
+        autoSwitchMinutes: state.autoSwitchMinutes,
       }),
       merge: (persisted, current) => {
         const saved = persisted as Partial<AppState>;

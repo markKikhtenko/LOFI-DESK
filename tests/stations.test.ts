@@ -16,12 +16,18 @@ describe('built-in radio catalog', () => {
       'Space Station Soma',
       'Synphaera Radio',
       'Illinois Street Lounge',
+      'DEF CON Radio',
+      'Fluid',
+      'Cliqhop IDM',
+      'Drone Zone 2',
+      'The Dark Zone',
+      'n5MD Radio',
     ]);
   });
 
   it('groups stations into useful listening categories', () => {
-    expect(DEFAULT_STATIONS.filter((station) => station.category === 'downtempo')).toHaveLength(5);
-    expect(DEFAULT_STATIONS.filter((station) => station.category === 'ambient')).toHaveLength(4);
+    expect(DEFAULT_STATIONS.filter((station) => station.category === 'downtempo')).toHaveLength(8);
+    expect(DEFAULT_STATIONS.filter((station) => station.category === 'ambient')).toHaveLength(7);
     expect(DEFAULT_STATIONS.filter((station) => station.category === 'chillout')).toHaveLength(3);
   });
 
@@ -32,6 +38,12 @@ describe('built-in radio catalog', () => {
       expect(new Set(sources).size).toBe(3);
       expect(sources.every((source) => source.startsWith('https://ice'))).toBe(true);
       expect(station.metadataUrl).toMatch(/^https:\/\/somafm\.com\/songs\/.+\.json$/);
+    }
+  });
+
+  it('ships local preview artwork for every built-in station', () => {
+    for (const station of DEFAULT_STATIONS) {
+      expect(station.artwork).toMatch(/\.webp$/);
     }
   });
 });

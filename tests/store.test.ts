@@ -25,6 +25,7 @@ beforeEach(() => {
     current: null,
     isPlaying: false,
     glowEnabled: false,
+    autoSwitchMinutes: 0,
   });
 });
 
@@ -55,5 +56,10 @@ describe('application store', () => {
   it('toggles the ambient glow preference', () => {
     useAppStore.getState().setGlowEnabled(true);
     expect(useAppStore.getState().glowEnabled).toBe(true);
+  });
+
+  it('stores the radio auto-switch interval', () => {
+    useAppStore.getState().setAutoSwitchMinutes(30);
+    expect(useAppStore.getState().autoSwitchMinutes).toBe(30);
   });
 });
