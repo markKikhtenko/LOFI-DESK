@@ -4,6 +4,9 @@ import { DEFAULT_STATIONS } from '../src/data/stations';
 describe('built-in radio catalog', () => {
   it('contains a varied lofi and chill selection', () => {
     expect(DEFAULT_STATIONS.map((station) => station.name)).toEqual([
+      'Северный очаг',
+      'Заснеженные горы',
+      'Древние руины',
       'Groove Salad',
       'Beat Blender',
       'Vaporwaves',
@@ -27,6 +30,7 @@ describe('built-in radio catalog', () => {
   });
 
   it('groups stations into useful listening categories', () => {
+    expect(DEFAULT_STATIONS.filter((station) => station.category === 'nordic')).toHaveLength(3);
     expect(DEFAULT_STATIONS.filter((station) => station.category === 'downtempo')).toHaveLength(8);
     expect(DEFAULT_STATIONS.filter((station) => station.category === 'ambient')).toHaveLength(8);
     expect(DEFAULT_STATIONS.filter((station) => station.category === 'chillout')).toHaveLength(3);
@@ -38,24 +42,32 @@ describe('built-in radio catalog', () => {
       expect(sources.length).toBeGreaterThanOrEqual(2);
       expect(new Set(sources).size).toBe(sources.length);
       expect(sources.every((source) => source.startsWith('https://'))).toBe(true);
-      if (station.provider === 'SomaFM') {
+      if (station.provider?.startsWith('SomaFM')) {
         expect(sources).toHaveLength(3);
         expect(sources.every((source) => source.startsWith('https://ice'))).toBe(true);
         expect(station.metadataUrl).toMatch(/^https:\/\/somafm\.com\/songs\/.+\.json$/);
       } else {
         expect(station.provider).toBe('laut.fm');
-        expect(station.metadataUrl).toBe('https://api.laut.fm/station/c418-radio/current_song');
+        expect(station.metadataUrl).toMatch(/^https:\/\/api\.laut\.fm\/station\/.+\/current_song$/);
       }
     }
   });
 
   it('ships local preview artwork for every built-in station', () => {
     for (const station of DEFAULT_STATIONS) {
-      expect(station.artwork).toMatch(/\.webp$/);
+      expect(station.artwork).toMatch(/\.(?:jpe?g|png|webp)$/);
     }
   });
 
   it('marks C418 Radio for its animated biome visual', () => {
     expect(DEFAULT_STATIONS.find((station) => station.id === 'laut-c418-radio')?.visual).toBe('biomes');
+  });
+
+  it('ships a distinct landscape visual for each northern mood', () => {
+    expect(DEFAULT_STATIONS.filter((station) => station.category === 'nordic').map((station) => station.visual)).toEqual([
+      'nordic-hearth',
+      'nordic-mountains',
+      'nordic-ruins',
+    ]);
   });
 });

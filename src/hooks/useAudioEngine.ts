@@ -125,7 +125,7 @@ export function useAudioEngine() {
       return;
     }
 
-    if (station?.isBuiltIn) audio.crossOrigin = 'anonymous';
+    if (station?.provider?.startsWith('SomaFM') || station?.provider === 'laut.fm') audio.crossOrigin = 'anonymous';
     else audio.removeAttribute('crossorigin');
     const source = station ? station.streamUrl : convertFileSrc(track!.path);
     stationSourcesRef.current = station

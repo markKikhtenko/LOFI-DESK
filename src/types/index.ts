@@ -4,9 +4,9 @@ export type RepeatMode = 'off' | 'all' | 'one';
 
 export type AutoSwitchMinutes = 0 | 15 | 30 | 60;
 
-export type StationCategory = 'downtempo' | 'ambient' | 'chillout' | 'custom';
+export type StationCategory = 'nordic' | 'downtempo' | 'ambient' | 'chillout' | 'custom';
 
-export type StationVisual = 'biomes';
+export type StationVisual = 'biomes' | 'nordic-hearth' | 'nordic-mountains' | 'nordic-ruins';
 
 export interface Station {
   id: string;

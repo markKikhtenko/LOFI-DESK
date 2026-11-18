@@ -1,9 +1,13 @@
 import ambientArtwork from '../assets/stations/ambient.webp';
 import chilloutArtwork from '../assets/stations/chillout.webp';
 import downtempoArtwork from '../assets/stations/downtempo.webp';
+import nordicHearthArtwork from '../assets/stations/nordic-hearth.jpg';
+import nordicMountainsArtwork from '../assets/stations/nordic-mountains.jpg';
+import nordicRuinsArtwork from '../assets/stations/nordic-ruins.jpg';
 import type { Station, StationCategory } from '../types';
 
 export const STATION_CATEGORIES: Array<{ id: StationCategory; label: string; description: string }> = [
+  { id: 'nordic', label: 'Северные саги', description: 'Фолк, фэнтези и тёмный эмбиент среди гор и древних руин' },
   { id: 'downtempo', label: 'Даунтемпо', description: 'Мягкий ритм и электронные грувы' },
   { id: 'ambient', label: 'Эмбиент', description: 'Фоновые текстуры без резких переходов' },
   { id: 'chillout', label: 'Чиллаут', description: 'Лаунж, вокал и расслабленная электроника' },
@@ -44,6 +48,54 @@ function somaStation(
 }
 
 export const DEFAULT_STATIONS: Station[] = [
+  {
+    id: 'nordic-hearth',
+    name: 'Северный очаг',
+    description: 'Кельтский фолк, живые струны и тепло большого деревянного дома.',
+    streamUrl: 'https://ice5.somafm.com/thistle-128-mp3',
+    streamFallbackUrls: [
+      'https://ice2.somafm.com/thistle-128-mp3',
+      'https://ice6.somafm.com/thistle-128-mp3',
+    ],
+    metadataUrl: 'https://somafm.com/songs/thistle.json',
+    provider: 'SomaFM · ThistleRadio',
+    category: 'nordic',
+    accent: '#d49a62',
+    artwork: nordicHearthArtwork,
+    visual: 'nordic-hearth',
+    isBuiltIn: true,
+  },
+  {
+    id: 'laut-skald',
+    name: 'Заснеженные горы',
+    description: 'Северные саги, викинг-фолк и эпическая музыка для долгого пути.',
+    streamUrl: 'https://skald.stream.laut.fm/skald',
+    streamFallbackUrls: ['https://stream.laut.fm/skald'],
+    metadataUrl: 'https://api.laut.fm/station/skald/current_song',
+    provider: 'laut.fm',
+    category: 'nordic',
+    accent: '#a9c5d2',
+    artwork: nordicMountainsArtwork,
+    visual: 'nordic-mountains',
+    isBuiltIn: true,
+  },
+  {
+    id: 'nordic-ruins',
+    name: 'Древние руины',
+    description: 'Тёмный глубокий эмбиент для ночной работы и исследования забытых залов.',
+    streamUrl: 'https://ice5.somafm.com/darkzone-128-mp3',
+    streamFallbackUrls: [
+      'https://ice6.somafm.com/darkzone-128-mp3',
+      'https://ice2.somafm.com/darkzone-128-mp3',
+    ],
+    metadataUrl: 'https://somafm.com/songs/darkzone.json',
+    provider: 'SomaFM · The Dark Zone',
+    category: 'nordic',
+    accent: '#74a7a2',
+    artwork: nordicRuinsArtwork,
+    visual: 'nordic-ruins',
+    isBuiltIn: true,
+  },
   somaStation(
     'somafm-groove-salad',
     'groovesalad',

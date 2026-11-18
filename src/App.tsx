@@ -20,6 +20,7 @@ export default function App() {
   const playbackError = useAppStore((state) => state.playbackError);
   const currentStation = current?.kind === 'station' ? stations.find((station) => station.id === current.id) : undefined;
   const biomeMode = currentStation?.visual === 'biomes' && isPlaying && !playbackError;
+  const nordicMode = currentStation?.visual?.startsWith('nordic-') && isPlaying && !playbackError;
   useAudioEngine();
   const updater = useUpdater(true);
   const pages = {
@@ -32,7 +33,11 @@ export default function App() {
   };
 
   return (
-    <div className={`app-shell ${glowEnabled ? 'glow-on' : ''} ${biomeMode ? 'biome-mode' : ''}`}>
+    <div
+      className={`app-shell ${glowEnabled ? 'glow-on' : ''} ${biomeMode ? 'biome-mode' : ''} ${nordicMode ? 'nordic-mode' : ''}`}
+      style={nordicMode ? { '--nordic-backdrop-image': `url("${currentStation?.artwork}")` } as React.CSSProperties : undefined}
+    >
+      <div className="nordic-backdrop" aria-hidden="true" />
       <BiomeScene variant="backdrop" active={biomeMode} />
       <Sidebar />
       <main className="main-content">{pages[page]}</main>

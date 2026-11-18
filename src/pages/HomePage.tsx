@@ -1,10 +1,11 @@
-import { ArrowRight, Headphones, Library, Pause, Play, Radio } from 'lucide-react';
+import { ArrowRight, Flame, Headphones, Landmark, Library, MountainSnow, Pause, Play, Radio } from 'lucide-react';
 import { AudioSpectrum } from '../components/AudioSpectrum';
 import { BiomeScene } from '../components/BiomeScene';
 import { StationCard } from '../components/StationCard';
 import { TrackTable } from '../components/TrackTable';
 import { useAppStore } from '../stores/useAppStore';
 import { formatCount } from '../utils/format';
+import nordicMountainsArtwork from '../assets/stations/nordic-mountains.jpg';
 
 export function HomePage() {
   const state = useAppStore();
@@ -15,6 +16,11 @@ export function HomePage() {
   const isAudible = hasMedia && state.isPlaying && !state.isBuffering && !state.playbackError;
   const canVisualize = Boolean(track || station?.isBuiltIn);
   const hasBiomeVisual = station?.visual === 'biomes' && state.isPlaying;
+  const hasNordicVisual = station?.visual?.startsWith('nordic-') ?? false;
+  const heroArtwork = hasNordicVisual ? station?.artwork : nordicMountainsArtwork;
+  const NordicIcon = station?.visual === 'nordic-hearth'
+    ? Flame
+    : station?.visual === 'nordic-ruins' ? Landmark : MountainSnow;
   const nowTitle = station?.name ?? track?.title ?? 'Ничего не играет';
   const nowSubtitle = station
     ? state.streamTitle ?? 'Прямой радиоэфир'
@@ -24,12 +30,15 @@ export function HomePage() {
 
   return (
     <div className="page home-page">
-      <section className={`hero-panel ${isAudible ? 'is-playing' : ''} ${hasBiomeVisual ? 'has-biome-visual' : ''}`}>
+      <section
+        className={`hero-panel has-nordic-background ${isAudible ? 'is-playing' : ''} ${hasBiomeVisual ? 'has-biome-visual' : ''} ${hasNordicVisual ? 'has-nordic-visual' : ''}`}
+        style={{ '--nordic-hero-image': `url("${heroArtwork}")` } as React.CSSProperties}
+      >
         <div className="hero-glow hero-glow-one" /><div className="hero-glow hero-glow-two" />
         <div className="hero-content">
           <p className="eyebrow">Главная</p>
           <h1>{greeting}.<br /><span>Настроимся на волну?</span></h1>
-          <p>Радио и музыка из вашей медиатеки.</p>
+          <p>Северные пейзажи, фэнтези-радио и музыка из вашей медиатеки.</p>
           <div className="hero-actions">
             {hasMedia ? (
               <button className="primary-button" onClick={() => state.setPlaying(!state.isPlaying)}>
@@ -46,6 +55,8 @@ export function HomePage() {
         <div className="hero-visual">
           {hasBiomeVisual
             ? <BiomeScene variant="hero" active={!state.playbackError} />
+            : hasNordicVisual
+              ? <div className="nordic-mark" aria-hidden="true"><NordicIcon size={66} strokeWidth={1.15} /><span /></div>
             : <div className={`vinyl ${isAudible ? 'is-spinning' : ''}`} aria-hidden="true"><span /><i /></div>}
           <div className="hero-now-playing">
             <span className={`hero-playback-state ${isAudible ? 'active' : ''}`}>
@@ -64,8 +75,8 @@ export function HomePage() {
       </section>
 
       <section className="content-section">
-        <div className="section-heading"><div><p className="eyebrow">Под настроение</p><h2>Лоуфай и чилл для работы</h2></div><button className="text-button" onClick={() => state.setPage('radio')}>Все станции <ArrowRight size={16} /></button></div>
-        <div className="station-grid home-stations">{stations.slice(0, 3).map((item) => <StationCard station={item} key={item.id} />)}</div>
+        <div className="section-heading"><div><p className="eyebrow">Три северных пути</p><h2>Музыка среди гор и древних легенд</h2></div><button className="text-button" onClick={() => state.setPage('radio')}>Все станции <ArrowRight size={16} /></button></div>
+        <div className="station-grid home-stations">{stations.filter((item) => item.category === 'nordic').map((item) => <StationCard station={item} key={item.id} />)}</div>
       </section>
 
       {tracks.length > 0 && (

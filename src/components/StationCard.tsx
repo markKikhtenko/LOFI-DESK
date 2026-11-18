@@ -1,4 +1,4 @@
-import { Edit3, Heart, MoreHorizontal, Pause, Play, RadioTower, Trash2 } from 'lucide-react';
+import { Edit3, Flame, Heart, Landmark, MoreHorizontal, MountainSnow, Pause, Play, RadioTower, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useAppStore } from '../stores/useAppStore';
 import type { Station } from '../types';
@@ -15,6 +15,12 @@ export function StationCard({ station, onEdit }: { station: Station; onEdit?: (s
   const removeStation = useAppStore((state) => state.removeStation);
   const active = current?.kind === 'station' && current.id === station.id;
   const artHash = [...station.id].reduce((total, character) => total + character.charCodeAt(0), 0);
+  const NordicIcon = station.visual === 'nordic-hearth'
+    ? Flame
+    : station.visual === 'nordic-mountains'
+      ? MountainSnow
+      : station.visual === 'nordic-ruins' ? Landmark : RadioTower;
+  const isNordic = station.category === 'nordic';
   const cardStyle = {
     '--station-accent': station.accent,
     '--station-art-y': `${18 + (artHash % 65)}%`,
@@ -23,13 +29,13 @@ export function StationCard({ station, onEdit }: { station: Station; onEdit?: (s
   } as React.CSSProperties;
 
   return (
-    <article className={`station-card ${active ? 'playing' : ''}`} style={cardStyle}>
+    <article className={`station-card ${active ? 'playing' : ''} ${isNordic ? 'nordic-card' : ''}`} style={cardStyle}>
       <div className={`station-art ${station.artwork ? 'has-artwork' : ''} ${station.visual === 'biomes' ? 'has-biome-art' : ''}`}>
         {station.visual === 'biomes'
           ? <BiomeScene variant="card" active={active && isPlaying} />
           : station.artwork && <img className="station-artwork" src={station.artwork} alt="" />}
         <span className="station-orbit" />
-        <RadioTower size={30} />
+        <NordicIcon size={30} />
         {active && <span className="live-pill">{isPlaying ? 'В ЭФИРЕ' : 'ПАУЗА'}</span>}
       </div>
       <div className="station-card-body">
