@@ -120,3 +120,43 @@ jobs:
           releaseDraft: false
           prerelease: false
           args: --bundles nsis
+
+      - name: Publish rate-limit-free updater manifest
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
+          $tag = "v$version"
+          $manifestDirectory = Join-Path $env:RUNNER_TEMP 'lofi-updater-manifest'
+          New-Item -ItemType Directory -Force -Path $manifestDirectory | Out-Null
+
+          gh release download $tag --pattern latest.json --dir $manifestDirectory --clobber
+          if ($LASTEXITCODE -ne 0) { throw 'Failed to download latest.json from the release.' }
+
+          $installerAssets = @(
+            gh release view $tag --json assets --jq '.assets[].name' |
+              Where-Object { $_ -like '*-setup.exe' }
+          )
+          if ($LASTEXITCODE -ne 0) { throw 'Failed to inspect release assets.' }
+          if ($installerAssets.Count -ne 1) {
+            throw "Expected exactly one NSIS installer, found $($installerAssets.Count)."
+          }
+
+          $installerName = $installerAssets[0]
+          $escapedInstallerName = [Uri]::EscapeDataString($installerName)
+          $directUrl = "https://github.com/$env:GITHUB_REPOSITORY/releases/download/$tag/$escapedInstallerName"
+          $manifestPath = Join-Path $manifestDirectory 'latest.json'
+          $manifest = Get-Content $manifestPath -Raw | ConvertFrom-Json
+          foreach ($platform in $manifest.platforms.PSObject.Properties) {
+            $platform.Value.url = $directUrl
+          }
+          $manifest | ConvertTo-Json -Depth 10 | Set-Content $manifestPath -Encoding utf8
+
+          gh release upload $tag $manifestPath --clobber
+          if ($LASTEXITCODE -ne 0) { throw 'Failed to publish the normalized latest.json.' }
+
+          $cacheBuster = [Uri]::EscapeDataString($env:GITHUB_RUN_ID)
+          $published = Invoke-RestMethod "https://github.com/$env:GITHUB_REPOSITORY/releases/download/$tag/latest.json?run=$cacheBuster"
+          $invalidUrls = @($published.platforms.PSObject.Properties.Value.url | Where-Object { $_ -ne $directUrl })
+          if ($invalidUrls.Count -ne 0) { throw 'Published latest.json contains an unexpected updater URL.' }
